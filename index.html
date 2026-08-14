@@ -3,348 +3,122 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#101319">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Guitar Coach">
+<meta name="format-detection" content="telephone=no">
 <title>Guitar Practice Coach</title>
 <link rel="manifest" href="manifest.json">
-<meta name="theme-color" content="#101319">
 <link rel="apple-touch-icon" href="icon.svg">
 <style>
-*{box-sizing:border-box}
-body{margin:0;background:#101319;color:#f7f7f7;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
-main{max-width:820px;margin:auto;padding:18px 14px 44px}
-h1{font-size:28px;margin:3px 0}.muted{color:#9da6b4}.small{font-size:13px}
-.tabs,.row{display:flex;gap:8px}.tabs{position:sticky;top:0;background:#101319;padding:8px 0;z-index:5}
-.tabs button,.row>*{flex:1}
-button,select,input{font:inherit}
-button,select,input[type=text],input[type=number]{border:0;border-radius:11px;padding:12px;background:#29303a;color:white;font-weight:750}
-.on,.selected,.primary{background:#ffb000!important;color:#111!important}
-.card{background:#191e26;border:1px solid #2d3440;border-radius:17px;padding:16px;margin:11px 0}
-.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
-.big{text-align:center;font-size:56px;font-weight:900}.hidden{display:none}
-input[type=range]{width:100%;accent-color:#ffb000}
-.fwrap{overflow:auto}
-.fret{display:grid;grid-template-columns:38px repeat(13,46px);min-width:640px;margin-top:12px}
-.cell{height:40px;border-right:1px solid #59616d;border-bottom:1px solid #39404a;display:flex;align-items:center;justify-content:center;font-size:12px;position:relative}
-.dot{width:30px;height:30px;border-radius:50%;background:#3b4552;display:flex;align-items:center;justify-content:center;font-weight:800;position:relative;transition:.12s}
-.root{background:#ffb000;color:#111}.playing{outline:3px solid white;transform:scale(1.16);box-shadow:0 0 0 3px #ffb000}
-.correct{outline:3px solid #fff;box-shadow:0 0 0 5px #55d98b}
-.dim{opacity:.16}.finger{position:absolute;right:-5px;bottom:-6px;width:16px;height:16px;border-radius:50%;background:#e9edf2;color:#111;font-size:10px;display:flex;align-items:center;justify-content:center;font-weight:900}
-.diagram{white-space:pre;font-family:monospace;text-align:center;background:#0e1217;padding:12px;border-radius:12px}
-.danger{background:#8b2d35}.wide{width:100%}.pills{display:grid;grid-template-columns:repeat(5,1fr);gap:7px;margin-top:10px}
-.status{text-align:center;font-weight:800;color:#ffb000;margin-top:10px}.trainer-note{text-align:center;font-size:44px;font-weight:900;margin:8px 0 2px}.trainer-loc{text-align:center;color:#c3cad4}
-.badge{display:inline-block;padding:5px 9px;border-radius:999px;background:#2a313b;color:#cdd4de;font-size:12px}
-.statgrid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}.stat{background:#10151b;border-radius:13px;padding:14px}.stat b{display:block;font-size:26px;margin-top:4px}
-.list{display:grid;gap:9px}.item{background:#10151b;border-radius:13px;padding:12px}.item-top{display:flex;justify-content:space-between;gap:10px;align-items:center}
-.item-title{font-weight:850}.item-meta{color:#9da6b4;font-size:13px;margin-top:5px}.actions{display:flex;gap:7px;margin-top:9px}.actions button{padding:9px;font-size:13px}
-.timer{font-size:26px;text-align:center;font-weight:900}
-.listenbox{background:#10151b;border-radius:14px;padding:14px;text-align:center;margin-top:10px}
-.detected{font-size:42px;font-weight:900;margin:4px 0}
-.good{color:#55d98b}.warn{color:#ffcf5c}.bad{color:#ff7b7b}
+:root{color-scheme:dark;--bg:#101319;--card:#191e26;--panel:#10151b;--line:#2d3440;--text:#f7f7f7;--muted:#9da6b4;--accent:#ffb000;--good:#55d98b;--warn:#ffcf5c;--bad:#ff7b7b}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html{background:var(--bg)}
+body{margin:0;background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;overscroll-behavior-y:none}
+main{max-width:820px;margin:auto;padding:max(18px,env(safe-area-inset-top)) max(14px,env(safe-area-inset-right)) calc(56px + env(safe-area-inset-bottom)) max(14px,env(safe-area-inset-left))}
+h1{font-size:28px;margin:3px 0}.muted{color:var(--muted)}.small{font-size:13px}.version{font-size:11px;font-weight:900;letter-spacing:.7px;color:#111;background:var(--accent);border-radius:999px;padding:4px 7px;vertical-align:middle;margin-left:5px}
+.tabs,.row{display:flex;gap:8px}.tabs{position:sticky;top:0;background:rgba(16,19,25,.96);backdrop-filter:blur(12px);padding:8px 0;z-index:5;overflow-x:auto;scrollbar-width:none}.tabs::-webkit-scrollbar{display:none}
+.tabs button,.row>*{flex:1}.tabs button{min-width:88px}
+button,select,input{font:inherit;touch-action:manipulation}
+button,select,input[type=text],input[type=number]{border:0;border-radius:11px;padding:12px;background:#29303a;color:white;font-weight:750;min-height:46px}
+button:active{transform:scale(.985)}
+.on,.selected,.primary{background:var(--accent)!important;color:#111!important}
+.card{background:var(--card);border:1px solid var(--line);border-radius:17px;padding:16px;margin:11px 0;box-shadow:0 8px 24px rgba(0,0,0,.08)}
+.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}.big{text-align:center;font-size:56px;font-weight:900}.hidden{display:none!important}
+input[type=range]{width:100%;accent-color:var(--accent);min-height:44px}.fwrap{overflow:auto;-webkit-overflow-scrolling:touch}.fret{display:grid;grid-template-columns:38px repeat(13,46px);min-width:640px;margin-top:12px}
+.cell{height:40px;border-right:1px solid #59616d;border-bottom:1px solid #39404a;display:flex;align-items:center;justify-content:center;font-size:12px;position:relative}.dot{width:30px;height:30px;border-radius:50%;background:#3b4552;display:flex;align-items:center;justify-content:center;font-weight:800;position:relative;transition:.12s}.root{background:var(--accent);color:#111}.playing{outline:3px solid white;transform:scale(1.16);box-shadow:0 0 0 3px var(--accent)}.correct{outline:3px solid #fff;box-shadow:0 0 0 5px var(--good)}.dim{opacity:.16}.finger{position:absolute;right:-5px;bottom:-6px;width:16px;height:16px;border-radius:50%;background:#e9edf2;color:#111;font-size:10px;display:flex;align-items:center;justify-content:center;font-weight:900}
+.diagram{white-space:pre;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;text-align:center;background:#0e1217;padding:12px;border-radius:12px}.danger{background:#8b2d35}.wide{width:100%}.pills{display:grid;grid-template-columns:repeat(5,1fr);gap:7px;margin-top:10px}.status{text-align:center;font-weight:800;color:var(--accent);margin-top:10px;min-height:20px}.trainer-note{text-align:center;font-size:44px;font-weight:900;margin:8px 0 2px}.trainer-loc{text-align:center;color:#c3cad4}.badge{display:inline-block;padding:5px 9px;border-radius:999px;background:#2a313b;color:#cdd4de;font-size:12px}.statgrid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}.stat{background:var(--panel);border-radius:13px;padding:14px}.stat b{display:block;font-size:26px;margin-top:4px}.list{display:grid;gap:9px}.item{background:var(--panel);border-radius:13px;padding:12px}.item-top{display:flex;justify-content:space-between;gap:10px;align-items:center}.item-title{font-weight:850}.item-meta{color:var(--muted);font-size:13px;margin-top:5px}.actions{display:flex;gap:7px;margin-top:9px}.actions button{padding:9px;font-size:13px}.timer{font-size:26px;text-align:center;font-weight:900}.listenbox{background:var(--panel);border-radius:14px;padding:14px;text-align:center;margin-top:10px}.detected{font-size:42px;font-weight:900;margin:4px 0}.good{color:var(--good)}.warn{color:var(--warn)}.bad{color:var(--bad)}.footer{text-align:center;color:#687383;font-size:12px;margin-top:28px}.startrow button{font-size:16px;font-weight:900}
+@media(max-width:430px){main{padding-top:max(10px,env(safe-area-inset-top))}h1{font-size:25px}.grid{grid-template-columns:repeat(3,1fr)}.tabs{margin-left:-2px;margin-right:-2px}.big{font-size:52px}.row.stack-mobile{flex-direction:column}.stat b{font-size:23px}}
+@media(display-mode:standalone){body{user-select:none;-webkit-user-select:none}input{user-select:text;-webkit-user-select:text}}
 </style>
 </head>
 <body><main>
-<h1>🎸 Guitar Practice Coach</h1>
-<div class="muted">Chord practice with ordered/random changes, scale boxes, routines, progress & microphone note detection</div>
-
-<div class="tabs">
+<h1>🎸 Guitar Practice Coach <span class="version">V9</span></h1>
+<div class="muted">Chord changes, scale boxes, routines, progress & microphone note detection</div>
+<div class="tabs" role="tablist" aria-label="Practice sections">
 <button id="tc" class="on" onclick="tab('c')">CHORDS</button>
 <button id="ts" onclick="tab('s')">SCALES</button>
 <button id="tr" onclick="tab('r')">ROUTINES</button>
 <button id="tp" onclick="tab('p')">PROGRESS</button>
 </div>
-
 <div id="cp">
-  <div class="card"><b>Choose chords</b><div id="chords" class="grid" style="margin-top:10px"></div></div>
-  <div class="card"><b>Tempo: <span id="bpm">80</span> BPM</b><input id="r1" type="range" min="40" max="200" value="80" oninput="tempo(this.value)"></div>
-  <div class="card"><b>Beats per chord</b><div class="row" style="margin-top:10px"><button onclick="beatSet(-1)">−</button><button id="beats">4</button><button onclick="beatSet(1)">+</button></div></div>
-  <div class="card">
-    <b>Chord order</b>
-    <div class="row" style="margin-top:10px">
-      <button id="orderedChordMode" class="selected" onclick="setChordMode('ordered')">ORDERED</button>
-      <button id="randomChordMode" onclick="setChordMode('random')">RANDOM</button>
-    </div>
-    <div class="muted small" style="margin-top:8px">Random mode chooses a different selected chord each time instead of repeating the same sequence.</div>
-  </div>
-  <div class="card"><div id="cur" class="big">Ready</div><div style="text-align:center">Next: <b id="next">—</b></div><div id="diag" class="diagram"></div></div>
-  <div class="row"><button class="primary" onclick="startChord()">START</button><button class="danger" onclick="stopAll()">STOP</button></div>
+<div class="card"><b>Choose chords</b><div class="muted small" style="margin-top:5px">Pick 2–6 chords.</div><div id="chords" class="grid" style="margin-top:10px"></div></div>
+<div class="card"><b>Tempo: <span id="bpm">80</span> BPM</b><input id="r1" aria-label="Chord tempo" type="range" min="40" max="200" value="80" oninput="tempo(this.value)"></div>
+<div class="card"><b>Beats per chord</b><div class="row" style="margin-top:10px"><button onclick="beatSet(-1)">−</button><button id="beats">4</button><button onclick="beatSet(1)">+</button></div></div>
+<div class="card"><b>Chord order</b><div class="row" style="margin-top:10px"><button id="orderedChordMode" class="selected" onclick="setChordMode('ordered')">ORDERED</button><button id="randomChordMode" onclick="setChordMode('random')">RANDOM</button></div><div class="muted small" style="margin-top:8px">Random mode chooses a different selected chord each time.</div></div>
+<div class="card"><div id="cur" class="big">Ready</div><div style="text-align:center">Next: <b id="next">—</b></div><div id="diag" class="diagram"></div></div>
+<div class="row startrow"><button class="primary" onclick="startChord()">START</button><button class="danger" onclick="stopAll()">STOP</button></div>
 </div>
-
 <div id="sp" class="hidden">
-  <div class="card">
-    <b>Choose key & scale</b>
-    <div class="row" style="margin-top:10px">
-      <select id="key" onchange="draw()"></select>
-      <select id="scale" onchange="draw()">
-        <option value="majp">Major Pentatonic</option>
-        <option value="minp" selected>Minor Pentatonic</option>
-        <option value="blues">Blues</option>
-        <option value="maj">Major</option>
-        <option value="min">Natural Minor</option>
-      </select>
-    </div>
-  </div>
-
-  <div class="card"><b>Standard scale box</b><div class="pills" id="positions"></div><div class="muted small" id="positionInfo" style="margin-top:9px"></div></div>
-
-  <div class="card"><b>Trainer settings</b><div class="row" style="margin-top:10px">
-    <select id="direction" onchange="buildSequence()"><option value="up">Ascending</option><option value="down">Descending</option><option value="both" selected>Up + Down</option></select>
-    <select id="subdivision"><option value="1">Quarter notes</option><option value="2" selected>Eighth notes</option><option value="3">Triplets</option><option value="4">Sixteenth notes</option></select>
-  </div></div>
-
-  <div class="card">
-    <b>Trainer mode</b>
-    <div class="row" style="margin-top:10px">
-      <button id="timedMode" class="selected" onclick="setTrainerMode('timed')">METRONOME</button>
-      <button id="listenMode" onclick="setTrainerMode('listen')">LISTEN TO GUITAR</button>
-    </div>
-    <div class="muted small" style="margin-top:8px">Listen mode advances only after the app hears the correct pitch several times in a row.</div>
-  </div>
-
-  <div class="card">
-    <b>Tempo: <span id="bpm2">80</span> BPM</b>
-    <input id="r2" type="range" min="40" max="200" value="80" oninput="tempo(this.value)">
-    <div class="row" style="margin-top:10px"><button id="rampBtn" onclick="toggleRamp()">Progressive BPM: OFF</button><select id="rampEvery"><option value="1">+5 every 1 loop</option><option value="2" selected>+5 every 2 loops</option><option value="4">+5 every 4 loops</option></select></div>
-  </div>
-
-  <div class="card"><div><b id="stitle"></b> <span class="badge" id="boxBadge"></span></div><div id="snotes" class="muted"></div><div class="fwrap"><div id="fret" class="fret"></div></div></div>
-
-  <div class="card">
-    <div class="muted small" style="text-align:center">PLAY THIS NOTE</div>
-    <div id="trainerNote" class="trainer-note">—</div>
-    <div id="trainerLoc" class="trainer-loc">Press Start Trainer</div>
-    <div id="trainerStatus" class="status"></div>
-
-    <div id="listenPanel" class="listenbox hidden">
-      <div class="muted small">MICROPHONE HEARS</div>
-      <div id="detectedNote" class="detected">—</div>
-      <div id="detectedInfo" class="muted">Waiting for microphone…</div>
-    </div>
-  </div>
-
-  <div class="card">
-    <b>Practice session</b>
-    <div class="row" style="margin-top:10px"><button onclick="changeSessionMinutes(-1)">−</button><button><span id="sessionMinutes">10</span> min</button><button onclick="changeSessionMinutes(1)">+</button></div>
-    <div class="timer" id="sessionTimer">10:00</div>
-  </div>
-
-  <div class="row"><button class="primary" onclick="startTrainer()">START TRAINER</button><button class="danger" onclick="finishSession()">FINISH</button></div>
+<div class="card"><b>Choose key & scale</b><div class="row stack-mobile" style="margin-top:10px"><select id="key" onchange="draw()" aria-label="Key"></select><select id="scale" onchange="draw()" aria-label="Scale"><option value="majp">Major Pentatonic</option><option value="minp" selected>Minor Pentatonic</option><option value="blues">Blues</option><option value="maj">Major</option><option value="min">Natural Minor</option></select></div></div>
+<div class="card"><b>Standard scale box</b><div class="pills" id="positions"></div><div class="muted small" id="positionInfo" style="margin-top:9px"></div></div>
+<div class="card"><b>Trainer settings</b><div class="row stack-mobile" style="margin-top:10px"><select id="direction" onchange="buildSequence()"><option value="up">Ascending</option><option value="down">Descending</option><option value="both" selected>Up + Down</option></select><select id="subdivision"><option value="1">Quarter notes</option><option value="2" selected>Eighth notes</option><option value="3">Triplets</option><option value="4">Sixteenth notes</option></select></div></div>
+<div class="card"><b>Trainer mode</b><div class="row" style="margin-top:10px"><button id="timedMode" class="selected" onclick="setTrainerMode('timed')">METRONOME</button><button id="listenMode" onclick="setTrainerMode('listen')">LISTEN TO GUITAR</button></div><div class="muted small" style="margin-top:8px">Listen mode advances after the app hears the correct pitch several times in a row.</div></div>
+<div class="card"><b>Tempo: <span id="bpm2">80</span> BPM</b><input id="r2" aria-label="Scale tempo" type="range" min="40" max="200" value="80" oninput="tempo(this.value)"><div class="row stack-mobile" style="margin-top:10px"><button id="rampBtn" onclick="toggleRamp()">Progressive BPM: OFF</button><select id="rampEvery"><option value="1">+5 every 1 loop</option><option value="2" selected>+5 every 2 loops</option><option value="4">+5 every 4 loops</option></select></div></div>
+<div class="card"><div><b id="stitle"></b> <span class="badge" id="boxBadge"></span></div><div id="snotes" class="muted"></div><div class="fwrap"><div id="fret" class="fret"></div></div></div>
+<div class="card"><div class="muted small" style="text-align:center">PLAY THIS NOTE</div><div id="trainerNote" class="trainer-note">—</div><div id="trainerLoc" class="trainer-loc">Press Start Trainer</div><div id="trainerStatus" class="status"></div><div id="listenPanel" class="listenbox hidden"><div class="muted small">MICROPHONE HEARS</div><div id="detectedNote" class="detected">—</div><div id="detectedInfo" class="muted">Waiting for microphone…</div></div></div>
+<div class="card"><b>Practice session</b><div class="row" style="margin-top:10px"><button onclick="changeSessionMinutes(-1)">−</button><button><span id="sessionMinutes">10</span> min</button><button onclick="changeSessionMinutes(1)">+</button></div><div class="timer" id="sessionTimer">10:00</div></div>
+<div class="row startrow"><button class="primary" onclick="startTrainer()">START TRAINER</button><button class="danger" onclick="finishSession()">FINISH</button></div>
 </div>
-
-<div id="rp" class="hidden">
-  <div class="card">
-    <b>Save current scale routine</b>
-    <input id="routineName" type="text" placeholder="Example: A minor pentatonic workout" style="width:100%;margin-top:10px">
-    <button class="primary wide" style="margin-top:10px" onclick="saveRoutine()">SAVE ROUTINE</button>
-  </div>
-  <div class="card"><b>Saved routines</b><div id="routineList" class="list" style="margin-top:10px"></div></div>
-</div>
-
-<div id="pp" class="hidden">
-  <div class="card">
-    <b>Your progress</b>
-    <div class="statgrid" style="margin-top:10px">
-      <div class="stat"><span class="muted small">Practice time</span><b id="totalMinutes">0 min</b></div>
-      <div class="stat"><span class="muted small">Sessions</span><b id="totalSessions">0</b></div>
-      <div class="stat"><span class="muted small">Best BPM</span><b id="bestBpm">0</b></div>
-      <div class="stat"><span class="muted small">Saved routines</span><b id="routineCount">0</b></div>
-    </div>
-  </div>
-  <div class="card"><b>Recent sessions</b><div id="historyList" class="list" style="margin-top:10px"></div></div>
-  <button class="danger wide" onclick="clearProgress()">CLEAR PROGRESS</button>
-</div>
-
+<div id="rp" class="hidden"><div class="card"><b>Save current scale routine</b><input id="routineName" type="text" placeholder="Example: A minor pentatonic workout" style="width:100%;margin-top:10px"><button class="primary wide" style="margin-top:10px" onclick="saveRoutine()">SAVE ROUTINE</button></div><div class="card"><b>Saved routines</b><div id="routineList" class="list" style="margin-top:10px"></div></div></div>
+<div id="pp" class="hidden"><div class="card"><b>Your progress</b><div class="statgrid" style="margin-top:10px"><div class="stat"><span class="muted small">Practice time</span><b id="totalMinutes">0 min</b></div><div class="stat"><span class="muted small">Sessions</span><b id="totalSessions">0</b></div><div class="stat"><span class="muted small">Best BPM</span><b id="bestBpm">0</b></div><div class="stat"><span class="muted small">Saved routines</span><b id="routineCount">0</b></div></div></div><div class="card"><b>Recent sessions</b><div id="historyList" class="list" style="margin-top:10px"></div></div><button class="danger wide" onclick="clearProgress()">CLEAR PROGRESS</button></div>
+<div class="footer">Guitar Practice Coach V9 • Installable iPhone web app</div>
 <script>
 const $=x=>document.getElementById(x);
 const CD={"C":"x32010","G":"320003","D":"xx0232","A":"x02220","E":"022100","Am":"x02210","Em":"022000","Dm":"xx0231","F":"133211","Bm":"x24432","C7":"x32310","D7":"xx0212","E7":"020100","A7":"x02020","G7":"320001","Dsus4":"xx0233","Asus4":"x02230"};
 let sel=["G","C","D","Em"],bpm=80,beats=4,i=0,b=0,timer=null,ac=null,sessionInterval=null,chordMode="ordered";
-let sessionMinutes=10,sessionStartedAt=null,startBpm=80,trainerMode="timed";
-
-Object.keys(CD).forEach(c=>{let x=document.createElement("button");x.textContent=c;x.dataset.c=c;x.onclick=()=>{if(sel.includes(c)){if(sel.length>2)sel=sel.filter(v=>v!==c)}else if(sel.length<6)sel.push(c);renderChords()};$("chords").appendChild(x)});
+let sessionMinutes=10,sessionStartedAt=null,startBpm=80,trainerMode="timed",wakeLock=null;
+const savedPrefs=()=>{try{return JSON.parse(localStorage.getItem("gpc_prefs")||"{}")}catch(e){return {}}};
+function savePrefs(){localStorage.setItem("gpc_prefs",JSON.stringify({sel,bpm,beats,chordMode,sessionMinutes,trainerMode,key:$('key')?.value,scale:$('scale')?.value,pos,ramp}))}
+Object.keys(CD).forEach(c=>{let x=document.createElement("button");x.textContent=c;x.dataset.c=c;x.onclick=()=>{if(sel.includes(c)){if(sel.length>2)sel=sel.filter(v=>v!==c)}else if(sel.length<6)sel.push(c);renderChords();showChord();savePrefs()};$("chords").appendChild(x)});
 function renderChords(){document.querySelectorAll("#chords button").forEach(x=>x.classList.toggle("on",sel.includes(x.dataset.c)))}
-function tempo(v){bpm=Math.max(40,Math.min(200,+v));$("bpm").textContent=bpm;$("bpm2").textContent=bpm;$("r1").value=bpm;$("r2").value=bpm}
-function beatSet(d){beats=Math.max(1,Math.min(16,beats+d));$("beats").textContent=beats}
-function clickSound(accent=false){ac=ac||new AudioContext();let o=ac.createOscillator(),g=ac.createGain();o.frequency.value=accent?1120:760;g.gain.setValueAtTime(.12,ac.currentTime);g.gain.exponentialRampToValueAtTime(.0001,ac.currentTime+.05);o.connect(g).connect(ac.destination);o.start();o.stop(ac.currentTime+.06)}
+function tempo(v){bpm=Math.max(40,Math.min(200,+v));$("bpm").textContent=bpm;$("bpm2").textContent=bpm;$("r1").value=bpm;$("r2").value=bpm;savePrefs()}
+function beatSet(d){beats=Math.max(1,Math.min(16,beats+d));$("beats").textContent=beats;savePrefs()}
+function clickSound(accent=false){ac=ac||new (window.AudioContext||window.webkitAudioContext)();if(ac.state==='suspended')ac.resume();let o=ac.createOscillator(),g=ac.createGain();o.frequency.value=accent?1120:760;g.gain.setValueAtTime(.12,ac.currentTime);g.gain.exponentialRampToValueAtTime(.0001,ac.currentTime+.05);o.connect(g).connect(ac.destination);o.start();o.stop(ac.currentTime+.06)}
+function haptic(){if(navigator.vibrate)navigator.vibrate(12)}
 function shape(s){return "e  "+s[5]+"\nB  "+s[4]+"\nG  "+s[3]+"\nD  "+s[2]+"\nA  "+s[1]+"\nE  "+s[0]}
-function setChordMode(mode){
-  chordMode=mode;
-  $("orderedChordMode").classList.toggle("selected",mode==="ordered");
-  $("randomChordMode").classList.toggle("selected",mode==="random");
-  showChord()
-}
-function getNextChordIndex(){
-  if(chordMode==="ordered") return (i+1)%sel.length;
-  if(sel.length<2) return i;
-  let n=i;
-  while(n===i) n=Math.floor(Math.random()*sel.length);
-  return n
-}
-function showChord(){
-  let c=sel[i], nextIndex=getNextChordIndex();
-  $("cur").textContent=c;
-  $("next").textContent=sel[nextIndex];
-  $("next").dataset.nextIndex=nextIndex;
-  $("diag").textContent=shape(CD[c])
-}
-function startChord(){
-  stopAll();i=0;b=0;showChord();
-  let f=()=>{
-    b++;
-    if(b>beats){
-      b=1;
-      i=chordMode==="random" ? +$("next").dataset.nextIndex : (i+1)%sel.length;
-      showChord()
-    }
-    clickSound(b===1)
-  };
-  f();
-  timer=setInterval(f,60000/bpm)
-}
-function tab(x){["c","s","r","p"].forEach(k=>{$((k==="c"?"c":k)+"p").classList.toggle("hidden",k!==x)});["tc","ts","tr","tp"].forEach(id=>$(id).classList.remove("on"));$({c:"tc",s:"ts",r:"tr",p:"tp"}[x]).classList.add("on");stopAll();if(x==="r")renderRoutines();if(x==="p")renderProgress()}
-
-const N=["C","C#","D","D#","E","F","F#","G","G#","A","A#","B"], OPEN=[4,11,7,2,9,4], STR=["e","B","G","D","A","E"];
+function setChordMode(mode){chordMode=mode;$("orderedChordMode").classList.toggle("selected",mode==="ordered");$("randomChordMode").classList.toggle("selected",mode==="random");showChord();savePrefs()}
+function getNextChordIndex(){if(chordMode==="ordered")return(i+1)%sel.length;if(sel.length<2)return i;let n=i;while(n===i)n=Math.floor(Math.random()*sel.length);return n}
+function showChord(){if(!sel.length)return;let c=sel[i%sel.length],nextIndex=getNextChordIndex();$("cur").textContent=c;$("next").textContent=sel[nextIndex];$("next").dataset.nextIndex=nextIndex;$("diag").textContent=shape(CD[c])}
+async function keepAwake(){try{if('wakeLock'in navigator)wakeLock=await navigator.wakeLock.request('screen')}catch(e){}}
+function releaseWake(){try{wakeLock?.release()}catch(e){}wakeLock=null}
+function startChord(){stopAll();i=0;b=0;showChord();keepAwake();let f=()=>{b++;if(b>beats){b=1;i=chordMode==="random"?+$("next").dataset.nextIndex:(i+1)%sel.length;showChord();haptic()}clickSound(b===1)};f();timer=setInterval(f,60000/bpm)}
+function tab(x){["c","s","r","p"].forEach(k=>$(k+"p").classList.toggle("hidden",k!==x));["tc","ts","tr","tp"].forEach(id=>$(id).classList.remove("on"));$({c:"tc",s:"ts",r:"tr",p:"tp"}[x]).classList.add("on");stopAll();if(x==="r")renderRoutines();if(x==="p")renderProgress();window.scrollTo({top:0,behavior:'smooth'})}
+const N=["C","C#","D","D#","E","F","F#","G","G#","A","A#","B"],OPEN=[4,11,7,2,9,4],STR=["e","B","G","D","A","E"];
 const INTS={majp:[0,2,4,7,9],minp:[0,3,5,7,10],blues:[0,3,5,6,7,10],maj:[0,2,4,5,7,9,11],min:[0,2,3,5,7,8,10]};
 const MINOR_PENT_BOXES=[[[0,3],[0,3],[0,2],[0,2],[0,2],[0,3]],[[0,2],[1,3],[0,2],[0,2],[0,3],[0,2]],[[0,2],[0,3],[0,2],[0,3],[0,3],[0,2]],[[0,3],[0,3],[0,2],[1,3],[1,3],[0,3]],[[0,2],[0,3],[0,3],[0,2],[0,2],[0,2]]];
-const ROOT_FRETS=[0,3,5,7,10];
-let pos=0,seq=[],seqIndex=0,ramp=false,loops=0;
-
+const ROOT_FRETS=[0,3,5,7,10];let pos=0,seq=[],seqIndex=0,ramp=false,loops=0;
 N.forEach(n=>{let o=document.createElement("option");o.textContent=o.value=n;$("key").appendChild(o)});$("key").value="A";
-for(let p=0;p<5;p++){let bt=document.createElement("button");bt.textContent=p+1;bt.onclick=()=>{pos=p;renderPositions();draw()};$("positions").appendChild(bt)}
-
-function noteIndexAt(s,f){return (OPEN[s]+f)%12}
-function rootFretForKey(key){let target=N.indexOf(key);for(let f=0;f<=12;f++)if(noteIndexAt(5,f)===target)return f;return 0}
-function boxBase(){let base=rootFretForKey($("key").value)+ROOT_FRETS[pos];while(base>12)base-=12;return base}
-function boxNotes(){const scale=$("scale").value;let root=N.indexOf($("key").value),allowed=INTS[scale].map(x=>(root+x)%12),base=boxBase(),out=[];
-  if(scale==="minp"){MINOR_PENT_BOXES[pos].forEach((offs,s)=>offs.forEach(o=>out.push({s,f:base+o,pitch:noteIndexAt(s,base+o)})))}
-  else{for(let s=0;s<6;s++)for(let f=base;f<=Math.min(12,base+4);f++){let p=noteIndexAt(s,f);if(allowed.includes(p))out.push({s,f,pitch:p})}}
-  return out.filter(x=>x.f>=0&&x.f<=12)}
-function fingerFor(f,base){let d=f-base;return d<=0?1:d===1?2:d===2?3:4}
-function renderPositions(){document.querySelectorAll("#positions button").forEach((x,idx)=>x.classList.toggle("selected",idx===pos));let base=boxBase();$("positionInfo").textContent="Box "+(pos+1)+" centers around frets "+base+"–"+Math.min(12,base+4)}
-function draw(){
-  let root=N.indexOf($("key").value),allowed=INTS[$("scale").value].map(x=>(root+x)%12),items=boxNotes(),base=boxBase(),f=$("fret");f.innerHTML="";
-  let z=document.createElement("div");z.className="cell";f.appendChild(z);for(let q=0;q<=12;q++){z=document.createElement("div");z.className="cell";z.textContent=q;f.appendChild(z)}
-  STR.forEach((sn,s)=>{z=document.createElement("div");z.className="cell";z.textContent=sn;f.appendChild(z);for(let q=0;q<=12;q++){let c=document.createElement("div");c.className="cell";let item=items.find(x=>x.s===s&&x.f===q);if(!item)c.classList.add("dim");
-    if(item){let d=document.createElement("span");d.className="dot"+(item.pitch===root?" root":"");d.textContent=N[item.pitch];d.dataset.string=s;d.dataset.fret=q;let fn=document.createElement("span");fn.className="finger";fn.textContent=fingerFor(q,base);d.appendChild(fn);c.appendChild(d)}f.appendChild(c)}});
-  $("stitle").textContent=$("key").value+" "+$("scale").options[$("scale").selectedIndex].text;$("boxBadge").textContent="Box "+(pos+1);$("snotes").textContent="Scale tones: "+allowed.map(x=>N[x]).join(" • ");renderPositions();buildSequence()
-}
+for(let p=0;p<5;p++){let bt=document.createElement("button");bt.textContent=p+1;bt.onclick=()=>{pos=p;renderPositions();draw();savePrefs()};$("positions").appendChild(bt)}
+function noteIndexAt(s,f){return(OPEN[s]+f)%12}function rootFretForKey(key){let target=N.indexOf(key);for(let f=0;f<=12;f++)if(noteIndexAt(5,f)===target)return f;return 0}function boxBase(){let base=rootFretForKey($("key").value)+ROOT_FRETS[pos];while(base>12)base-=12;return base}
+function boxNotes(){const scale=$("scale").value;let root=N.indexOf($("key").value),allowed=INTS[scale].map(x=>(root+x)%12),base=boxBase(),out=[];if(scale==="minp"){MINOR_PENT_BOXES[pos].forEach((offs,s)=>offs.forEach(o=>out.push({s,f:base+o,pitch:noteIndexAt(s,base+o)})))}else{for(let s=0;s<6;s++)for(let f=base;f<=Math.min(12,base+4);f++){let p=noteIndexAt(s,f);if(allowed.includes(p))out.push({s,f,pitch:p})}}return out.filter(x=>x.f>=0&&x.f<=12)}
+function fingerFor(f,base){let d=f-base;return d<=0?1:d===1?2:d===2?3:4}function renderPositions(){document.querySelectorAll("#positions button").forEach((x,idx)=>x.classList.toggle("selected",idx===pos));let base=boxBase();$("positionInfo").textContent="Box "+(pos+1)+" centers around frets "+base+"–"+Math.min(12,base+4)}
+function draw(){let root=N.indexOf($("key").value),allowed=INTS[$("scale").value].map(x=>(root+x)%12),items=boxNotes(),base=boxBase(),f=$("fret");f.innerHTML="";let z=document.createElement("div");z.className="cell";f.appendChild(z);for(let q=0;q<=12;q++){z=document.createElement("div");z.className="cell";z.textContent=q;f.appendChild(z)}STR.forEach((sn,s)=>{z=document.createElement("div");z.className="cell";z.textContent=sn;f.appendChild(z);for(let q=0;q<=12;q++){let c=document.createElement("div");c.className="cell";let item=items.find(x=>x.s===s&&x.f===q);if(!item)c.classList.add("dim");if(item){let d=document.createElement("span");d.className="dot"+(item.pitch===root?" root":"");d.textContent=N[item.pitch];d.dataset.string=s;d.dataset.fret=q;let fn=document.createElement("span");fn.className="finger";fn.textContent=fingerFor(q,base);d.appendChild(fn);c.appendChild(d)}f.appendChild(c)}});$("stitle").textContent=$("key").value+" "+$("scale").options[$("scale").selectedIndex].text;$("boxBadge").textContent="Box "+(pos+1);$("snotes").textContent="Scale tones: "+allowed.map(x=>N[x]).join(" • ");renderPositions();buildSequence();savePrefs()}
 function buildSequence(){let items=boxNotes().slice().sort((a,b)=>b.s-a.s||a.f-b.f),dir=$("direction").value;if(dir==="down")items=items.reverse();if(dir==="both"&&items.length>1)items=items.concat(items.slice(0,-1).reverse());seq=items;seqIndex=0;clearPlaying();if(seq.length)mark(seq[0])}
-function clearPlaying(){document.querySelectorAll(".dot.playing,.dot.correct").forEach(x=>x.classList.remove("playing","correct"))}
-function mark(item){clearPlaying();let d=document.querySelector('.dot[data-string="'+item.s+'"][data-fret="'+item.f+'"]');if(d)d.classList.add("playing");$("trainerNote").textContent=N[item.pitch];$("trainerLoc").textContent=STR[item.s]+" string • fret "+item.f}
-function flashCorrect(item){let d=document.querySelector('.dot[data-string="'+item.s+'"][data-fret="'+item.f+'"]');if(d){d.classList.remove("playing");d.classList.add("correct");setTimeout(()=>d.classList.remove("correct"),180)}}
-function toggleRamp(){ramp=!ramp;$("rampBtn").classList.toggle("selected",ramp);$("rampBtn").textContent="Progressive BPM: "+(ramp?"ON":"OFF")}
-function changeSessionMinutes(d){sessionMinutes=Math.max(1,Math.min(60,sessionMinutes+d));$("sessionMinutes").textContent=sessionMinutes;updateSessionTimer(sessionMinutes*60)}
-function updateSessionTimer(sec){sec=Math.max(0,Math.floor(sec));$("sessionTimer").textContent=String(Math.floor(sec/60)).padStart(2,"0")+":"+String(sec%60).padStart(2,"0")}
-function setTrainerMode(m){trainerMode=m;$("timedMode").classList.toggle("selected",m==="timed");$("listenMode").classList.toggle("selected",m==="listen");$("listenPanel").classList.toggle("hidden",m!=="listen");stopMic()}
-
-function startTrainer(){
-  stopAll();buildSequence();if(!seq.length)return;seqIndex=0;loops=0;startBpm=bpm;sessionStartedAt=Date.now();
-  let endAt=Date.now()+sessionMinutes*60000;
-  sessionInterval=setInterval(()=>{let remain=Math.ceil((endAt-Date.now())/1000);updateSessionTimer(remain);if(remain<=0)finishSession()},1000);
-  if(trainerMode==="listen") startListenTrainer();
-  else startTimedTrainer();
-}
-function startTimedTrainer(){
-  const subdivision=+$("subdivision").value,loopEvery=+$("rampEvery").value;let beatCounter=0;
-  const schedule=()=>{timer=setTimeout(step,60000/bpm/subdivision)};
-  const step=()=>{let item=seq[seqIndex];mark(item);clickSound(beatCounter%subdivision===0);$("trainerStatus").textContent=(seqIndex+1)+" / "+seq.length+" • "+bpm+" BPM";seqIndex++;beatCounter++;
-    if(seqIndex>=seq.length){seqIndex=0;loops++;if(ramp&&loops%loopEvery===0&&bpm<200)tempo(Math.min(200,bpm+5))}schedule()};
-  step()
-}
-
-/* Microphone pitch detection */
+function clearPlaying(){document.querySelectorAll(".dot.playing,.dot.correct").forEach(x=>x.classList.remove("playing","correct"))}function mark(item){clearPlaying();let d=document.querySelector('.dot[data-string="'+item.s+'"][data-fret="'+item.f+'"]');if(d)d.classList.add("playing");$("trainerNote").textContent=N[item.pitch];$("trainerLoc").textContent=STR[item.s]+" string • fret "+item.f}function flashCorrect(item){let d=document.querySelector('.dot[data-string="'+item.s+'"][data-fret="'+item.f+'"]');if(d){d.classList.remove("playing");d.classList.add("correct");setTimeout(()=>d.classList.remove("correct"),180)}}
+function toggleRamp(){ramp=!ramp;$("rampBtn").classList.toggle("selected",ramp);$("rampBtn").textContent="Progressive BPM: "+(ramp?"ON":"OFF");savePrefs()}function changeSessionMinutes(d){sessionMinutes=Math.max(1,Math.min(60,sessionMinutes+d));$("sessionMinutes").textContent=sessionMinutes;updateSessionTimer(sessionMinutes*60);savePrefs()}function updateSessionTimer(sec){sec=Math.max(0,Math.floor(sec));$("sessionTimer").textContent=String(Math.floor(sec/60)).padStart(2,"0")+":"+String(sec%60).padStart(2,"0")}
+function setTrainerMode(m){trainerMode=m;$("timedMode").classList.toggle("selected",m==="timed");$("listenMode").classList.toggle("selected",m==="listen");$("listenPanel").classList.toggle("hidden",m!=="listen");stopMic();savePrefs()}
+function startTrainer(){stopAll();buildSequence();if(!seq.length)return;seqIndex=0;loops=0;startBpm=bpm;sessionStartedAt=Date.now();keepAwake();let endAt=Date.now()+sessionMinutes*60000;sessionInterval=setInterval(()=>{let remain=Math.ceil((endAt-Date.now())/1000);updateSessionTimer(remain);if(remain<=0)finishSession()},1000);if(trainerMode==="listen")startListenTrainer();else startTimedTrainer()}
+function startTimedTrainer(){const subdivision=+$("subdivision").value,loopEvery=+$("rampEvery").value;let beatCounter=0;const schedule=()=>{timer=setTimeout(step,60000/bpm/subdivision)};const step=()=>{let item=seq[seqIndex];mark(item);clickSound(beatCounter%subdivision===0);$("trainerStatus").textContent=(seqIndex+1)+" / "+seq.length+" • "+bpm+" BPM";seqIndex++;beatCounter++;if(seqIndex>=seq.length){seqIndex=0;loops++;if(ramp&&loops%loopEvery===0&&bpm<200)tempo(Math.min(200,bpm+5))}schedule()};step()}
 let micStream=null,micCtx=null,micSource=null,analyser=null,micRAF=null,stableHits=0,lastDetected=-1;
-async function startListenTrainer(){
-  $("listenPanel").classList.remove("hidden");
-  $("trainerStatus").textContent="Requesting microphone…";
-  try{
-    micStream=await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:false,noiseSuppression:false,autoGainControl:false}});
-    micCtx=new (window.AudioContext||window.webkitAudioContext)();
-    micSource=micCtx.createMediaStreamSource(micStream);
-    analyser=micCtx.createAnalyser();analyser.fftSize=2048;micSource.connect(analyser);
-    $("trainerStatus").textContent="Listening — play the highlighted note";
-    mark(seq[seqIndex]);listenLoop();
-  }catch(e){
-    $("trainerStatus").textContent="Microphone permission is required for Listen mode";
-    $("detectedInfo").textContent="Allow microphone access in Safari, then try again.";
-  }
-}
-function autoCorrelate(buf,sampleRate){
-  let size=buf.length,rms=0;for(let i=0;i<size;i++)rms+=buf[i]*buf[i];rms=Math.sqrt(rms/size);
-  if(rms<0.012)return -1;
-  let r1=0,r2=size-1,thres=.2;
-  for(let i=0;i<size/2;i++){if(Math.abs(buf[i])<thres){r1=i;break}}
-  for(let i=1;i<size/2;i++){if(Math.abs(buf[size-i])<thres){r2=size-i;break}}
-  buf=buf.slice(r1,r2);size=buf.length;
-  let c=new Array(size).fill(0);
-  for(let lag=0;lag<size;lag++)for(let i=0;i<size-lag;i++)c[lag]+=buf[i]*buf[i+lag];
-  let d=0;while(d+1<size&&c[d]>c[d+1])d++;
-  let max=-1,maxpos=-1;for(let i=d;i<size;i++){if(c[i]>max){max=c[i];maxpos=i}}
-  if(maxpos<=0)return -1;
-  let T0=maxpos;
-  if(T0>0&&T0<size-1){
-    let x1=c[T0-1],x2=c[T0],x3=c[T0+1],a=(x1+x3-2*x2)/2,b=(x3-x1)/2;
-    if(a)T0=T0-b/(2*a)
-  }
-  return sampleRate/T0
-}
-function freqToMidi(freq){return Math.round(69+12*Math.log2(freq/440))}
-function midiToName(m){return N[((m%12)+12)%12]}
-function centsOff(freq,m){let target=440*Math.pow(2,(m-69)/12);return Math.round(1200*Math.log2(freq/target))}
-function listenLoop(){
-  if(!analyser)return;
-  let buf=new Float32Array(analyser.fftSize);analyser.getFloatTimeDomainData(buf);
-  let freq=autoCorrelate(buf,micCtx.sampleRate);
-  if(freq>0){
-    let midi=freqToMidi(freq),name=midiToName(midi),pitch=((midi%12)+12)%12,cents=centsOff(freq,midi);
-    $("detectedNote").textContent=name;$("detectedInfo").textContent=Math.round(freq)+" Hz • "+(cents>0?"+":"")+cents+" cents";
-    let target=seq[seqIndex];
-    if(target && pitch===target.pitch && Math.abs(cents)<=35){
-      if(lastDetected===pitch)stableHits++;else stableHits=1;
-      lastDetected=pitch;$("detectedNote").className="detected good";
-      if(stableHits>=3){
-        flashCorrect(target);stableHits=0;lastDetected=-1;seqIndex++;
-        if(seqIndex>=seq.length){seqIndex=0;loops++}
-        $("trainerStatus").textContent="Correct ✓ • "+(seqIndex+1)+" / "+seq.length;
-        setTimeout(()=>{if(seq.length)mark(seq[seqIndex])},160)
-      }
-    }else{
-      stableHits=0;lastDetected=pitch;$("detectedNote").className="detected warn";
-    }
-  } else {
-    $("detectedNote").textContent="—";$("detectedNote").className="detected";$("detectedInfo").textContent="Play a clear single note";
-  }
-  micRAF=requestAnimationFrame(listenLoop)
-}
-function stopMic(){
-  if(micRAF)cancelAnimationFrame(micRAF);micRAF=null;
-  if(micStream)micStream.getTracks().forEach(t=>t.stop());micStream=null;
-  if(micCtx)micCtx.close();micCtx=null;analyser=null;micSource=null;
-}
-function finishSession(){
-  if(sessionStartedAt){let mins=Math.max(1,Math.round((Date.now()-sessionStartedAt)/60000));recordSession(mins);sessionStartedAt=null}
-  stopAll();updateSessionTimer(sessionMinutes*60);$("trainerStatus").textContent="Session saved"
-}
-function stopAll(){if(timer){clearInterval(timer);clearTimeout(timer)}if(sessionInterval)clearInterval(sessionInterval);timer=null;sessionInterval=null;clearPlaying();stopMic()}
-
-/* Saved routines and progress */
-function getRoutines(){return JSON.parse(localStorage.getItem("gpc_routines")||"[]")}
-function setRoutines(v){localStorage.setItem("gpc_routines",JSON.stringify(v))}
-function getHistory(){return JSON.parse(localStorage.getItem("gpc_history")||"[]")}
-function setHistory(v){localStorage.setItem("gpc_history",JSON.stringify(v))}
-function saveRoutine(){
-  let name=$("routineName").value.trim()||($("key").value+" "+$("scale").options[$("scale").selectedIndex].text+" Box "+(pos+1));
-  let routines=getRoutines();routines.unshift({id:Date.now(),name,key:$("key").value,scale:$("scale").value,pos,bpm,dir:$("direction").value,sub:$("subdivision").value,ramp,mins:sessionMinutes,mode:trainerMode});
-  setRoutines(routines.slice(0,20));$("routineName").value="";renderRoutines()
-}
-function loadRoutine(id){
-  let r=getRoutines().find(x=>x.id===id);if(!r)return;$("key").value=r.key;$("scale").value=r.scale;pos=r.pos;tempo(r.bpm);$("direction").value=r.dir;$("subdivision").value=r.sub;ramp=r.ramp;sessionMinutes=r.mins;setTrainerMode(r.mode||"timed");
-  $("sessionMinutes").textContent=sessionMinutes;updateSessionTimer(sessionMinutes*60);$("rampBtn").classList.toggle("selected",ramp);$("rampBtn").textContent="Progressive BPM: "+(ramp?"ON":"OFF");draw();tab("s")
-}
+async function startListenTrainer(){$("listenPanel").classList.remove("hidden");$("trainerStatus").textContent="Requesting microphone…";try{micStream=await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:false,noiseSuppression:false,autoGainControl:false}});micCtx=new(window.AudioContext||window.webkitAudioContext)();micSource=micCtx.createMediaStreamSource(micStream);analyser=micCtx.createAnalyser();analyser.fftSize=2048;micSource.connect(analyser);$("trainerStatus").textContent="Listening — play the highlighted note";mark(seq[seqIndex]);listenLoop()}catch(e){$("trainerStatus").textContent="Microphone permission is required for Listen mode";$("detectedInfo").textContent="Allow microphone access in Safari, then try again."}}
+function autoCorrelate(buf,sampleRate){let size=buf.length,rms=0;for(let i=0;i<size;i++)rms+=buf[i]*buf[i];rms=Math.sqrt(rms/size);if(rms<0.012)return-1;let r1=0,r2=size-1,thres=.2;for(let i=0;i<size/2;i++){if(Math.abs(buf[i])<thres){r1=i;break}}for(let i=1;i<size/2;i++){if(Math.abs(buf[size-i])<thres){r2=size-i;break}}buf=buf.slice(r1,r2);size=buf.length;let c=new Array(size).fill(0);for(let lag=0;lag<size;lag++)for(let i=0;i<size-lag;i++)c[lag]+=buf[i]*buf[i+lag];let d=0;while(d+1<size&&c[d]>c[d+1])d++;let max=-1,maxpos=-1;for(let i=d;i<size;i++){if(c[i]>max){max=c[i];maxpos=i}}if(maxpos<=0)return-1;let T0=maxpos;if(T0>0&&T0<size-1){let x1=c[T0-1],x2=c[T0],x3=c[T0+1],a=(x1+x3-2*x2)/2,b=(x3-x1)/2;if(a)T0=T0-b/(2*a)}return sampleRate/T0}function freqToMidi(freq){return Math.round(69+12*Math.log2(freq/440))}function midiToName(m){return N[((m%12)+12)%12]}function centsOff(freq,m){let target=440*Math.pow(2,(m-69)/12);return Math.round(1200*Math.log2(freq/target))}
+function listenLoop(){if(!analyser)return;let buf=new Float32Array(analyser.fftSize);analyser.getFloatTimeDomainData(buf);let freq=autoCorrelate(buf,micCtx.sampleRate);if(freq>0){let midi=freqToMidi(freq),name=midiToName(midi),pitch=((midi%12)+12)%12,cents=centsOff(freq,midi);$("detectedNote").textContent=name;$("detectedInfo").textContent=Math.round(freq)+" Hz • "+(cents>0?"+":"")+cents+" cents";let target=seq[seqIndex];if(target&&pitch===target.pitch&&Math.abs(cents)<=35){if(lastDetected===pitch)stableHits++;else stableHits=1;lastDetected=pitch;$("detectedNote").className="detected good";if(stableHits>=3){flashCorrect(target);haptic();stableHits=0;lastDetected=-1;seqIndex++;if(seqIndex>=seq.length){seqIndex=0;loops++}$("trainerStatus").textContent="Correct ✓ • "+(seqIndex+1)+" / "+seq.length;setTimeout(()=>{if(seq.length)mark(seq[seqIndex])},160)}}else{stableHits=0;lastDetected=pitch;$("detectedNote").className="detected warn"}}else{$("detectedNote").textContent="—";$("detectedNote").className="detected";$("detectedInfo").textContent="Play a clear single note"}micRAF=requestAnimationFrame(listenLoop)}
+function stopMic(){if(micRAF)cancelAnimationFrame(micRAF);micRAF=null;if(micStream)micStream.getTracks().forEach(t=>t.stop());micStream=null;if(micCtx)micCtx.close();micCtx=null;analyser=null;micSource=null}
+function finishSession(){if(sessionStartedAt){let mins=Math.max(1,Math.round((Date.now()-sessionStartedAt)/60000));recordSession(mins);sessionStartedAt=null}stopAll();updateSessionTimer(sessionMinutes*60);$("trainerStatus").textContent="Session saved"}
+function stopAll(){if(timer){clearInterval(timer);clearTimeout(timer)}if(sessionInterval)clearInterval(sessionInterval);timer=null;sessionInterval=null;clearPlaying();stopMic();releaseWake()}
+function getRoutines(){try{return JSON.parse(localStorage.getItem("gpc_routines")||"[]")}catch(e){return[]}}function setRoutines(v){localStorage.setItem("gpc_routines",JSON.stringify(v))}function getHistory(){try{return JSON.parse(localStorage.getItem("gpc_history")||"[]")}catch(e){return[]}}function setHistory(v){localStorage.setItem("gpc_history",JSON.stringify(v))}
+function saveRoutine(){let name=$("routineName").value.trim()||($("key").value+" "+$("scale").options[$("scale").selectedIndex].text+" Box "+(pos+1));let routines=getRoutines();routines.unshift({id:Date.now(),name,key:$("key").value,scale:$("scale").value,pos,bpm,dir:$("direction").value,sub:$("subdivision").value,ramp,mins:sessionMinutes,mode:trainerMode});setRoutines(routines.slice(0,20));$("routineName").value="";renderRoutines()}
+function loadRoutine(id){let r=getRoutines().find(x=>x.id===id);if(!r)return;$("key").value=r.key;$("scale").value=r.scale;pos=r.pos;tempo(r.bpm);$("direction").value=r.dir;$("subdivision").value=r.sub;ramp=r.ramp;sessionMinutes=r.mins;setTrainerMode(r.mode||"timed");$("sessionMinutes").textContent=sessionMinutes;updateSessionTimer(sessionMinutes*60);$("rampBtn").classList.toggle("selected",ramp);$("rampBtn").textContent="Progressive BPM: "+(ramp?"ON":"OFF");draw();tab("s")}
 function deleteRoutine(id){setRoutines(getRoutines().filter(x=>x.id!==id));renderRoutines()}
 function renderRoutines(){let list=$("routineList"),r=getRoutines();list.innerHTML=r.length?"":"<div class='muted'>No saved routines yet.</div>";r.forEach(x=>{let d=document.createElement("div");d.className="item";d.innerHTML="<div class='item-top'><div class='item-title'>"+x.name+"</div><span class='badge'>"+x.bpm+" BPM</span></div><div class='item-meta'>"+x.key+" • "+$("scale").querySelector('option[value="'+x.scale+'"]').textContent+" • Box "+(x.pos+1)+" • "+x.mins+" min • "+((x.mode||"timed")==="listen"?"Listen":"Metronome")+"</div><div class='actions'><button class='primary'>LOAD</button><button class='danger'>DELETE</button></div>";d.querySelectorAll("button")[0].onclick=()=>loadRoutine(x.id);d.querySelectorAll("button")[1].onclick=()=>deleteRoutine(x.id);list.appendChild(d)});$("routineCount").textContent=r.length}
 function recordSession(mins){let h=getHistory();h.unshift({id:Date.now(),date:new Date().toLocaleDateString(),key:$("key").value,scale:$("scale").value,pos:pos+1,mins,start:startBpm,end:bpm,mode:trainerMode});setHistory(h.slice(0,50));renderProgress()}
 function renderProgress(){let h=getHistory(),r=getRoutines(),total=h.reduce((a,x)=>a+x.mins,0),best=h.reduce((a,x)=>Math.max(a,x.end),0);$("totalMinutes").textContent=total+" min";$("totalSessions").textContent=h.length;$("bestBpm").textContent=best;$("routineCount").textContent=r.length;let list=$("historyList");list.innerHTML=h.length?"":"<div class='muted'>No sessions recorded yet.</div>";h.slice(0,10).forEach(x=>{let d=document.createElement("div");d.className="item";d.innerHTML="<div class='item-top'><div class='item-title'>"+x.key+" "+$("scale").querySelector('option[value="'+x.scale+'"]').textContent+"</div><span class='badge'>"+x.mins+" min</span></div><div class='item-meta'>"+x.date+" • Box "+x.pos+" • "+x.start+" → "+x.end+" BPM • "+((x.mode||"timed")==="listen"?"Listen":"Metronome")+"</div>";list.appendChild(d)})}
 function clearProgress(){if(confirm("Clear all saved practice history?")){setHistory([]);renderProgress()}}
-
-renderChords();showChord();renderPositions();draw();updateSessionTimer(sessionMinutes*60);renderRoutines();renderProgress();
+function loadPrefs(){let p=savedPrefs();if(Array.isArray(p.sel)&&p.sel.length>=2)sel=p.sel.filter(x=>CD[x]);if(p.bpm) bpm=Math.max(40,Math.min(200,+p.bpm));if(p.beats)beats=Math.max(1,Math.min(16,+p.beats));if(p.chordMode)chordMode=p.chordMode;if(p.sessionMinutes)sessionMinutes=Math.max(1,Math.min(60,+p.sessionMinutes));if(p.trainerMode)trainerMode=p.trainerMode;if(p.key&&N.includes(p.key))$("key").value=p.key;if(p.scale&&INTS[p.scale])$("scale").value=p.scale;if(Number.isInteger(p.pos))pos=Math.max(0,Math.min(4,p.pos));ramp=!!p.ramp;tempo(bpm);$("beats").textContent=beats;setChordMode(chordMode);setTrainerMode(trainerMode);$("sessionMinutes").textContent=sessionMinutes;updateSessionTimer(sessionMinutes*60);$("rampBtn").classList.toggle("selected",ramp);$("rampBtn").textContent="Progressive BPM: "+(ramp?"ON":"OFF")}
+loadPrefs();renderChords();showChord();renderPositions();draw();renderRoutines();renderProgress();
+document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible'&&(timer||sessionInterval))keepAwake()});
 if("serviceWorker"in navigator)addEventListener("load",()=>navigator.serviceWorker.register("./sw.js"));
 </script>
 </main></body></html>
