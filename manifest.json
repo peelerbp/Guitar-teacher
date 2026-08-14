@@ -1,18 +1,15 @@
 {
   "name": "Guitar Practice Coach",
   "short_name": "Guitar Coach",
-  "description": "Chord switching and guitar practice trainer.",
   "start_url": "./",
   "display": "standalone",
-  "background_color": "#0d1015",
-  "theme_color": "#0d1015",
-  "orientation": "portrait",
+  "background_color": "#101319",
+  "theme_color": "#101319",
   "icons": [
     {
       "src": "icon.svg",
       "sizes": "any",
-      "type": "image/svg+xml",
-      "purpose": "any maskable"
+      "type": "image/svg+xml"
     }
   ]
 }
