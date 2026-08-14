@@ -10,35 +10,32 @@
 <style>
 *{box-sizing:border-box}
 body{margin:0;background:#101319;color:#f7f7f7;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
-main{max-width:780px;margin:auto;padding:18px 14px 42px}
-h1{font-size:28px;margin:3px 0}.muted{color:#9da6b4}.tabs,.row{display:flex;gap:8px}.tabs{position:sticky;top:0;background:#101319;padding:8px 0;z-index:5}
+main{max-width:800px;margin:auto;padding:18px 14px 42px}
+h1{font-size:28px;margin:3px 0}.muted{color:#9da6b4}.small{font-size:13px}
+.tabs,.row{display:flex;gap:8px}.tabs{position:sticky;top:0;background:#101319;padding:8px 0;z-index:5}
 .tabs button,.row>*{flex:1}
-button,select{border:0;border-radius:11px;padding:12px;background:#29303a;color:white;font-weight:750;font-size:15px}
+button,select,input{font:inherit}
+button,select{border:0;border-radius:11px;padding:12px;background:#29303a;color:white;font-weight:750}
 .on,.selected,.primary{background:#ffb000!important;color:#111!important}
 .card{background:#191e26;border:1px solid #2d3440;border-radius:17px;padding:16px;margin:11px 0}
 .grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
-.big{text-align:center;font-size:56px;font-weight:900}
-.hidden{display:none}
+.big{text-align:center;font-size:56px;font-weight:900}.hidden{display:none}
 input[type=range]{width:100%;accent-color:#ffb000}
 .fwrap{overflow:auto}
-.fret{display:grid;grid-template-columns:38px repeat(13,44px);min-width:610px;margin-top:12px}
-.cell{height:38px;border-right:1px solid #59616d;border-bottom:1px solid #39404a;display:flex;align-items:center;justify-content:center;font-size:12px;position:relative}
-.dot{width:28px;height:28px;border-radius:50%;background:#3b4552;display:flex;align-items:center;justify-content:center;font-weight:800;transition:.12s}
-.root{background:#ffb000;color:#111}
-.playing{outline:3px solid white;transform:scale(1.16);box-shadow:0 0 0 3px #ffb000}
-.dim{opacity:.22}
+.fret{display:grid;grid-template-columns:38px repeat(13,46px);min-width:640px;margin-top:12px}
+.cell{height:40px;border-right:1px solid #59616d;border-bottom:1px solid #39404a;display:flex;align-items:center;justify-content:center;font-size:12px;position:relative}
+.dot{width:30px;height:30px;border-radius:50%;background:#3b4552;display:flex;align-items:center;justify-content:center;font-weight:800;position:relative;transition:.12s}
+.root{background:#ffb000;color:#111}.playing{outline:3px solid white;transform:scale(1.16);box-shadow:0 0 0 3px #ffb000}
+.dim{opacity:.16}.finger{position:absolute;right:-5px;bottom:-6px;width:16px;height:16px;border-radius:50%;background:#e9edf2;color:#111;font-size:10px;display:flex;align-items:center;justify-content:center;font-weight:900}
 .diagram{white-space:pre;font-family:monospace;text-align:center;background:#0e1217;padding:12px;border-radius:12px}
-.danger{background:#8b2d35}.wide{width:100%}
-.pills{display:grid;grid-template-columns:repeat(5,1fr);gap:7px;margin-top:10px}
-.status{text-align:center;font-weight:800;color:#ffb000;margin-top:10px}
-.trainer-note{text-align:center;font-size:44px;font-weight:900;margin:8px 0 2px}
-.trainer-loc{text-align:center;color:#c3cad4}
-.small{font-size:13px}
+.danger{background:#8b2d35}.wide{width:100%}.pills{display:grid;grid-template-columns:repeat(5,1fr);gap:7px;margin-top:10px}
+.status{text-align:center;font-weight:800;color:#ffb000;margin-top:10px}.trainer-note{text-align:center;font-size:44px;font-weight:900;margin:8px 0 2px}.trainer-loc{text-align:center;color:#c3cad4}
+.badge{display:inline-block;padding:5px 9px;border-radius:999px;background:#2a313b;color:#cdd4de;font-size:12px}
 </style>
 </head>
 <body><main>
 <h1>🎸 Guitar Practice Coach</h1>
-<div class="muted">Chord changes, scales, positions & guided note-by-note practice</div>
+<div class="muted">Chord practice + true scale boxes + guided tempo progression</div>
 
 <div class="tabs">
 <button id="tc" class="on" onclick="tab('c')">CHORD PRACTICE</button>
@@ -59,21 +56,19 @@ input[type=range]{width:100%;accent-color:#ffb000}
     <div class="row" style="margin-top:10px">
       <select id="key" onchange="draw()"></select>
       <select id="scale" onchange="draw()">
-        <option value="maj">Major</option>
-        <option value="min">Natural Minor</option>
         <option value="majp">Major Pentatonic</option>
         <option value="minp" selected>Minor Pentatonic</option>
         <option value="blues">Blues</option>
-        <option value="dor">Dorian</option>
-        <option value="mix">Mixolydian</option>
+        <option value="maj">Major</option>
+        <option value="min">Natural Minor</option>
       </select>
     </div>
   </div>
 
   <div class="card">
-    <b>Position / box</b>
+    <b>Standard scale box</b>
     <div class="pills" id="positions"></div>
-    <div class="muted small" id="positionRange" style="margin-top:9px"></div>
+    <div class="muted small" id="positionInfo" style="margin-top:9px"></div>
   </div>
 
   <div class="card">
@@ -96,129 +91,131 @@ input[type=range]{width:100%;accent-color:#ffb000}
   <div class="card">
     <b>Tempo: <span id="bpm2">80</span> BPM</b>
     <input id="r2" type="range" min="40" max="200" value="80" oninput="tempo(this.value)">
+    <div class="row" style="margin-top:10px">
+      <button id="rampBtn" onclick="toggleRamp()">Progressive BPM: OFF</button>
+      <select id="rampEvery">
+        <option value="1">+5 every 1 loop</option>
+        <option value="2" selected>+5 every 2 loops</option>
+        <option value="4">+5 every 4 loops</option>
+      </select>
+    </div>
+    <div class="muted small" style="margin-top:8px">Progressive mode adds 5 BPM after the selected number of completed scale loops, up to 200 BPM.</div>
   </div>
 
   <div class="card">
-    <b id="stitle"></b>
+    <div><b id="stitle"></b> <span class="badge" id="boxBadge"></span></div>
     <div id="snotes" class="muted"></div>
     <div class="fwrap"><div id="fret" class="fret"></div></div>
   </div>
 
   <div class="card">
-    <div class="muted small" style="text-align:center">NEXT NOTE</div>
+    <div class="muted small" style="text-align:center">PLAY THIS NOTE</div>
     <div id="trainerNote" class="trainer-note">—</div>
     <div id="trainerLoc" class="trainer-loc">Press Start Trainer</div>
     <div id="trainerStatus" class="status"></div>
   </div>
 
-  <div class="row">
-    <button class="primary" onclick="startTrainer()">START TRAINER</button>
-    <button class="danger" onclick="stopAll()">STOP</button>
-  </div>
+  <div class="row"><button class="primary" onclick="startTrainer()">START TRAINER</button><button class="danger" onclick="stopAll()">STOP</button></div>
 </div>
 
 <script>
 const $=x=>document.getElementById(x);
 const CD={"C":"x32010","G":"320003","D":"xx0232","A":"x02220","E":"022100","Am":"x02210","Em":"022000","Dm":"xx0231","F":"133211","Bm":"x24432","C7":"x32310","D7":"xx0212","E7":"020100","A7":"x02020","G7":"320001","Dsus4":"xx0233","Asus4":"x02230"};
 let sel=["G","C","D","Em"],bpm=80,beats=4,i=0,b=0,timer=null,ac=null;
-
-Object.keys(CD).forEach(c=>{
-  let x=document.createElement("button");x.textContent=c;x.dataset.c=c;
-  x.onclick=()=>{if(sel.includes(c)){if(sel.length>2)sel=sel.filter(v=>v!==c)}else if(sel.length<6)sel.push(c);renderChords()};
-  $("chords").appendChild(x)
-});
+Object.keys(CD).forEach(c=>{let x=document.createElement("button");x.textContent=c;x.dataset.c=c;x.onclick=()=>{if(sel.includes(c)){if(sel.length>2)sel=sel.filter(v=>v!==c)}else if(sel.length<6)sel.push(c);renderChords()};$("chords").appendChild(x)});
 function renderChords(){document.querySelectorAll("#chords button").forEach(x=>x.classList.toggle("on",sel.includes(x.dataset.c)))}
-function tempo(v){bpm=+v;$("bpm").textContent=bpm;$("bpm2").textContent=bpm;$("r1").value=bpm;$("r2").value=bpm}
+function tempo(v){bpm=Math.max(40,Math.min(200,+v));$("bpm").textContent=bpm;$("bpm2").textContent=bpm;$("r1").value=bpm;$("r2").value=bpm}
 function beatSet(d){beats=Math.max(1,Math.min(16,beats+d));$("beats").textContent=beats}
-function clickSound(accent=false){
-  ac=ac||new AudioContext(); let o=ac.createOscillator(),g=ac.createGain();
-  o.frequency.value=accent?1120:760; g.gain.setValueAtTime(.12,ac.currentTime);
-  g.gain.exponentialRampToValueAtTime(.0001,ac.currentTime+.05);o.connect(g).connect(ac.destination);o.start();o.stop(ac.currentTime+.06)
-}
+function clickSound(accent=false){ac=ac||new AudioContext();let o=ac.createOscillator(),g=ac.createGain();o.frequency.value=accent?1120:760;g.gain.setValueAtTime(.12,ac.currentTime);g.gain.exponentialRampToValueAtTime(.0001,ac.currentTime+.05);o.connect(g).connect(ac.destination);o.start();o.stop(ac.currentTime+.06)}
 function shape(s){return "e  "+s[5]+"\nB  "+s[4]+"\nG  "+s[3]+"\nD  "+s[2]+"\nA  "+s[1]+"\nE  "+s[0]}
 function showChord(){let c=sel[i];$("cur").textContent=c;$("next").textContent=sel[(i+1)%sel.length];$("diag").textContent=shape(CD[c])}
 function startChord(){stopAll();i=0;b=0;showChord();let f=()=>{b++;if(b>beats){b=1;i=(i+1)%sel.length;showChord()}clickSound(b===1)};f();timer=setInterval(f,60000/bpm)}
-
 function tab(x){$("cp").classList.toggle("hidden",x!=="c");$("sp").classList.toggle("hidden",x!=="s");$("tc").classList.toggle("on",x==="c");$("ts").classList.toggle("on",x==="s");stopAll()}
 
-const N=["C","C#","D","D#","E","F","F#","G","G#","A","A#","B"];
-const OPEN=[4,11,7,2,9,4];
-const STRING_NAMES=["e","B","G","D","A","E"];
-const I={
-  maj:[0,2,4,5,7,9,11], min:[0,2,3,5,7,8,10], majp:[0,2,4,7,9],
-  minp:[0,3,5,7,10], blues:[0,3,5,6,7,10], dor:[0,2,3,5,7,9,10], mix:[0,2,4,5,7,9,10]
-};
-const POSITIONS=[
-  {name:"1",min:0,max:4},{name:"2",min:3,max:7},{name:"3",min:5,max:9},{name:"4",min:7,max:11},{name:"5",min:9,max:12}
+const N=["C","C#","D","D#","E","F","F#","G","G#","A","A#","B"], OPEN=[4,11,7,2,9,4], STR=["e","B","G","D","A","E"];
+const INTS={majp:[0,2,4,7,9],minp:[0,3,5,7,10],blues:[0,3,5,6,7,10],maj:[0,2,4,5,7,9,11],min:[0,2,3,5,7,8,10]};
+const MINOR_PENT_BOXES=[
+  [[0,3],[0,3],[0,2],[0,2],[0,2],[0,3]],
+  [[0,2],[1,3],[0,2],[0,2],[0,3],[0,2]],
+  [[0,2],[0,3],[0,2],[0,3],[0,3],[0,2]],
+  [[0,3],[0,3],[0,2],[1,3],[1,3],[0,3]],
+  [[0,2],[0,3],[0,3],[0,2],[0,2],[0,2]]
 ];
-let pos=0, seq=[], seqIndex=0;
+const ROOT_FRETS=[0,3,5,7,10];
+let pos=0,seq=[],seqIndex=0,ramp=false,loops=0;
 
 N.forEach(n=>{let o=document.createElement("option");o.textContent=o.value=n;$("key").appendChild(o)});$("key").value="A";
-POSITIONS.forEach((p,idx)=>{let bt=document.createElement("button");bt.textContent=p.name;bt.onclick=()=>{pos=idx;renderPositions();draw()};$("positions").appendChild(bt)});
+for(let p=0;p<5;p++){let bt=document.createElement("button");bt.textContent=p+1;bt.onclick=()=>{pos=p;renderPositions();draw()};$("positions").appendChild(bt)}
 
-function renderPositions(){
-  document.querySelectorAll("#positions button").forEach((x,idx)=>x.classList.toggle("selected",idx===pos));
-  let p=POSITIONS[pos];$("positionRange").textContent="Position "+p.name+": frets "+p.min+"–"+p.max
+function noteIndexAt(s,f){return (OPEN[s]+f)%12}
+function rootFretForKey(key){let target=N.indexOf(key);for(let f=0;f<=12;f++)if(noteIndexAt(5,f)===target)return f;return 0}
+function boxBase(){
+  let root=rootFretForKey($("key").value), base=root+ROOT_FRETS[pos];
+  while(base>12)base-=12;
+  return base
 }
-function allowedNotes(){let ri=N.indexOf($("key").value);return I[$("scale").value].map(x=>(ri+x)%12)}
+function boxNotes(){
+  const scale=$("scale").value;
+  // Standard 5-box fingering map is exact for minor pentatonic. For related scales,
+  // we retain the same box region and include scale tones that fall within that hand position.
+  let root=N.indexOf($("key").value), allowed=INTS[scale].map(x=>(root+x)%12), base=boxBase(), out=[];
+  if(scale==="minp"){
+    MINOR_PENT_BOXES[pos].forEach((offs,s)=>offs.forEach(o=>out.push({s,f:base+o,pitch:noteIndexAt(s,base+o)})));
+  } else {
+    for(let s=0;s<6;s++)for(let f=base;f<=Math.min(12,base+4);f++){let p=noteIndexAt(s,f);if(allowed.includes(p))out.push({s,f,pitch:p})}
+  }
+  return out.filter(x=>x.f>=0&&x.f<=12)
+}
+function fingerFor(f,base){let d=f-base;return d<=0?1:d===1?2:d===2?3:4}
+function renderPositions(){document.querySelectorAll("#positions button").forEach((x,idx)=>x.classList.toggle("selected",idx===pos));let base=boxBase();$("positionInfo").textContent="Box "+(pos+1)+" centers around frets "+base+"–"+Math.min(12,base+4)}
 function draw(){
-  let ri=N.indexOf($("key").value), allowed=allowedNotes(), f=$("fret"), p=POSITIONS[pos]; f.innerHTML="";
+  let root=N.indexOf($("key").value), allowed=INTS[$("scale").value].map(x=>(root+x)%12), items=boxNotes(), base=boxBase(), f=$("fret");f.innerHTML="";
   let z=document.createElement("div");z.className="cell";f.appendChild(z);
   for(let q=0;q<=12;q++){z=document.createElement("div");z.className="cell";z.textContent=q;f.appendChild(z)}
-  STRING_NAMES.forEach((sn,s)=>{
-    z=document.createElement("div");z.className="cell";z.textContent=sn;f.appendChild(z);
-    for(let q=0;q<=12;q++){
-      let pitch=(OPEN[s]+q)%12,c=document.createElement("div");c.className="cell";
-      if(q<p.min||q>p.max)c.classList.add("dim");
-      if(allowed.includes(pitch)){
-        let d=document.createElement("span");d.className="dot"+(pitch===ri?" root":"");
-        d.textContent=N[pitch];d.dataset.string=s;d.dataset.fret=q;d.dataset.pitch=pitch;c.appendChild(d)
-      }
-      f.appendChild(c)
-    }
-  });
-  $("stitle").textContent=$("key").value+" "+$("scale").options[$("scale").selectedIndex].text+" — Position "+(pos+1);
-  $("snotes").textContent="Notes: "+allowed.map(x=>N[x]).join(" • ");
-  buildSequence()
+  STR.forEach((sn,s)=>{z=document.createElement("div");z.className="cell";z.textContent=sn;f.appendChild(z);for(let q=0;q<=12;q++){
+    let c=document.createElement("div");c.className="cell";let item=items.find(x=>x.s===s&&x.f===q);
+    if(!item)c.classList.add("dim");
+    if(item){let d=document.createElement("span");d.className="dot"+(item.pitch===root?" root":"");d.textContent=N[item.pitch];d.dataset.string=s;d.dataset.fret=q;d.dataset.pitch=item.pitch;
+      let fn=document.createElement("span");fn.className="finger";fn.textContent=fingerFor(q,base);d.appendChild(fn);c.appendChild(d)}
+    f.appendChild(c)
+  }});
+  $("stitle").textContent=$("key").value+" "+$("scale").options[$("scale").selectedIndex].text;
+  $("boxBadge").textContent="Box "+(pos+1);
+  $("snotes").textContent="Scale tones: "+allowed.map(x=>N[x]).join(" • ");
+  renderPositions();buildSequence()
 }
-
 function buildSequence(){
-  let p=POSITIONS[pos],allowed=allowedNotes(),items=[];
-  // Lowest-pitch-to-highest-ish route: low E to high e, ascending fret order.
-  for(let s=5;s>=0;s--){
-    for(let f=p.min;f<=p.max;f++){
-      let pitch=(OPEN[s]+f)%12;
-      if(allowed.includes(pitch))items.push({s,f,pitch})
-    }
-  }
-  const dir=$("direction").value;
-  if(dir==="down") items=items.slice().reverse();
-  if(dir==="both" && items.length>1) items=items.concat(items.slice(0,-1).reverse());
-  seq=items;seqIndex=0;clearPlaying();showTrainerPreview()
+  let items=boxNotes().slice().sort((a,b)=>b.s-a.s||a.f-b.f);
+  let dir=$("direction").value;
+  if(dir==="down")items=items.reverse();
+  if(dir==="both"&&items.length>1)items=items.concat(items.slice(0,-1).reverse());
+  seq=items;seqIndex=0;clearPlaying();if(seq.length)mark(seq[0])
 }
 function clearPlaying(){document.querySelectorAll(".dot.playing").forEach(x=>x.classList.remove("playing"))}
-function mark(item){
-  clearPlaying();
-  let d=document.querySelector('.dot[data-string="'+item.s+'"][data-fret="'+item.f+'"]');
-  if(d)d.classList.add("playing");
-  $("trainerNote").textContent=N[item.pitch];
-  $("trainerLoc").textContent=STRING_NAMES[item.s]+" string • fret "+item.f;
-}
-function showTrainerPreview(){if(seq.length){mark(seq[0]);$("trainerStatus").textContent=seq.length+" notes in this exercise"}}
+function mark(item){clearPlaying();let d=document.querySelector('.dot[data-string="'+item.s+'"][data-fret="'+item.f+'"]');if(d)d.classList.add("playing");$("trainerNote").textContent=N[item.pitch];$("trainerLoc").textContent=STR[item.s]+" string • fret "+item.f}
+function toggleRamp(){ramp=!ramp;$("rampBtn").classList.toggle("selected",ramp);$("rampBtn").textContent="Progressive BPM: "+(ramp?"ON":"OFF")}
 function startTrainer(){
-  stopAll();buildSequence();if(!seq.length)return;
-  seqIndex=0;let subdivision=+$("subdivision").value;
-  let intervalMs=60000/bpm/subdivision;
+  stopAll();buildSequence();if(!seq.length)return;seqIndex=0;loops=0;
+  const subdivision=+$("subdivision").value, loopEvery=+$("rampEvery").value;
   let beatCounter=0;
+  const schedule=()=>{
+    let intervalMs=60000/bpm/subdivision;
+    timer=setTimeout(step,intervalMs)
+  };
   const step=()=>{
     let item=seq[seqIndex];mark(item);clickSound(beatCounter%subdivision===0);
-    $("trainerStatus").textContent=(seqIndex+1)+" / "+seq.length+" • "+bpm+" BPM";
-    seqIndex=(seqIndex+1)%seq.length;beatCounter++
+    $("trainerStatus").textContent=(seqIndex+1)+" / "+seq.length+" • "+bpm+" BPM"+(ramp?" • ramp on":"");
+    seqIndex++;beatCounter++;
+    if(seqIndex>=seq.length){
+      seqIndex=0;loops++;
+      if(ramp && loops%loopEvery===0 && bpm<200){tempo(Math.min(200,bpm+5))}
+    }
+    schedule()
   };
-  step();timer=setInterval(step,intervalMs)
+  step()
 }
-function stopAll(){if(timer)clearInterval(timer);timer=null;$("trainerStatus").textContent="";clearPlaying()}
+function stopAll(){if(timer){clearInterval(timer);clearTimeout(timer)}timer=null;$("trainerStatus").textContent="";clearPlaying()}
 renderChords();showChord();renderPositions();draw();
-if("serviceWorker" in navigator)addEventListener("load",()=>navigator.serviceWorker.register("./sw.js"));
+if("serviceWorker"in navigator)addEventListener("load",()=>navigator.serviceWorker.register("./sw.js"));
 </script>
 </main></body></html>

@@ -1,12 +1,10 @@
-# Guitar Practice Coach v4
+# Guitar Practice Coach v5
 
-New in v4:
-- Scale Position / Box selector (5 fretboard regions)
-- Guided note-by-note scale trainer
-- Current note and string/fret location
-- Fretboard note highlighting in real time
-- Ascending, descending, and up+down practice
-- Quarter, eighth, triplet, and sixteenth-note subdivisions
-- Metronome synchronized to the trainer
+New:
+- Standard 5-box minor pentatonic layouts
+- Finger numbers on fretboard notes
+- Progressive BPM mode (+5 BPM after selected loop count)
+- Guided note highlighting remains synced to the metronome
+- Related scale modes use the selected box region for practice
 
-Upload these five files to the root of the existing GitHub Pages repository and commit the replacements.
+Upload these five files to the root of your existing GitHub Pages repository and commit the replacements.
