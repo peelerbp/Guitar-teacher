@@ -1,14 +1,12 @@
-# Guitar Practice Coach v9
+# Guitar Practice Coach v10
 
-New in v9:
-- Keeps all v8 chord, random mode, scale trainer, microphone, routines and progress features
-- Improved iPhone safe-area layout and mobile touch targets
-- Better standalone/Home Screen behavior on iPhone
-- Remembers key practice settings between sessions
-- Keeps the screen awake during active practice when supported
-- Light haptic feedback on chord changes/correct listened notes when supported
-- Improved offline caching with a new v9 service worker cache
-- PWA metadata updated for the next step toward iOS/App Store packaging
+New in v10:
+- Keeps all working v9 chord, random mode, scale trainer, microphone, routines and progress features
+- Fixes the top navigation so all four tabs fit on iPhone without PROGRESS being cut off
+- Uses a four-column mobile tab bar with responsive text sizing
+- Adds tighter iPhone spacing and slightly more native-feeling controls/cards
+- Preserves iPhone safe-area, Home Screen, saved settings, wake lock and haptic behavior from v9
+- Updates the offline service-worker cache to v10
 
 Upload these five files to the root of the existing GitHub Pages repository and commit the replacements:
 - index.html
@@ -18,4 +16,4 @@ Upload these five files to the root of the existing GitHub Pages repository and 
 - README.md
 
 Then open:
-https://peelerbp.github.io/Guitar-teacher/?v=9
+https://peelerbp.github.io/Guitar-teacher/?v=10

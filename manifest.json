@@ -3,7 +3,7 @@
   "name": "Guitar Practice Coach",
   "short_name": "Guitar Coach",
   "description": "Practice guitar chord changes, scale patterns, timing, routines and progress.",
-  "start_url": "./?v=9",
+  "start_url": "./?v=10",
   "scope": "./",
   "display": "standalone",
   "orientation": "portrait-primary",
