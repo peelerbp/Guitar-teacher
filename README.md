@@ -1,15 +1,11 @@
-# Guitar Practice Coach v7
+# Guitar Practice Coach v8
 
-New in v7:
-- Microphone Listen mode for scale training
-- Detects single-note guitar pitch through the phone microphone
-- Shows detected note, frequency, and cents sharp/flat
-- Advances only after the correct pitch is detected consistently
-- Saves Listen/Metronome mode in routines and session history
-
-Important:
-- Microphone access requires HTTPS (GitHub Pages is fine).
-- Safari/iPhone will prompt for microphone permission the first time.
-- Best results come from playing one clean note at a time in a quiet room.
+New in v8:
+- Chord Practice now has ORDERED and RANDOM modes
+- Random mode chooses a different selected chord each change
+- The "Next" chord display updates to show the upcoming random chord
+- Existing v7 scale trainer, microphone listening, routines, and progress features remain
 
 Upload these five files to the root of your existing GitHub Pages repository and commit the replacements.
+Then open:
+https://peelerbp.github.io/Guitar-teacher/?v=8

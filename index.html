@@ -43,7 +43,7 @@ input[type=range]{width:100%;accent-color:#ffb000}
 </head>
 <body><main>
 <h1>🎸 Guitar Practice Coach</h1>
-<div class="muted">Chord practice, scale boxes, routines, progress & microphone note detection</div>
+<div class="muted">Chord practice with ordered/random changes, scale boxes, routines, progress & microphone note detection</div>
 
 <div class="tabs">
 <button id="tc" class="on" onclick="tab('c')">CHORDS</button>
@@ -56,6 +56,14 @@ input[type=range]{width:100%;accent-color:#ffb000}
   <div class="card"><b>Choose chords</b><div id="chords" class="grid" style="margin-top:10px"></div></div>
   <div class="card"><b>Tempo: <span id="bpm">80</span> BPM</b><input id="r1" type="range" min="40" max="200" value="80" oninput="tempo(this.value)"></div>
   <div class="card"><b>Beats per chord</b><div class="row" style="margin-top:10px"><button onclick="beatSet(-1)">−</button><button id="beats">4</button><button onclick="beatSet(1)">+</button></div></div>
+  <div class="card">
+    <b>Chord order</b>
+    <div class="row" style="margin-top:10px">
+      <button id="orderedChordMode" class="selected" onclick="setChordMode('ordered')">ORDERED</button>
+      <button id="randomChordMode" onclick="setChordMode('random')">RANDOM</button>
+    </div>
+    <div class="muted small" style="margin-top:8px">Random mode chooses a different selected chord each time instead of repeating the same sequence.</div>
+  </div>
   <div class="card"><div id="cur" class="big">Ready</div><div style="text-align:center">Next: <b id="next">—</b></div><div id="diag" class="diagram"></div></div>
   <div class="row"><button class="primary" onclick="startChord()">START</button><button class="danger" onclick="stopAll()">STOP</button></div>
 </div>
@@ -147,7 +155,7 @@ input[type=range]{width:100%;accent-color:#ffb000}
 <script>
 const $=x=>document.getElementById(x);
 const CD={"C":"x32010","G":"320003","D":"xx0232","A":"x02220","E":"022100","Am":"x02210","Em":"022000","Dm":"xx0231","F":"133211","Bm":"x24432","C7":"x32310","D7":"xx0212","E7":"020100","A7":"x02020","G7":"320001","Dsus4":"xx0233","Asus4":"x02230"};
-let sel=["G","C","D","Em"],bpm=80,beats=4,i=0,b=0,timer=null,ac=null,sessionInterval=null;
+let sel=["G","C","D","Em"],bpm=80,beats=4,i=0,b=0,timer=null,ac=null,sessionInterval=null,chordMode="ordered";
 let sessionMinutes=10,sessionStartedAt=null,startBpm=80,trainerMode="timed";
 
 Object.keys(CD).forEach(c=>{let x=document.createElement("button");x.textContent=c;x.dataset.c=c;x.onclick=()=>{if(sel.includes(c)){if(sel.length>2)sel=sel.filter(v=>v!==c)}else if(sel.length<6)sel.push(c);renderChords()};$("chords").appendChild(x)});
@@ -156,8 +164,40 @@ function tempo(v){bpm=Math.max(40,Math.min(200,+v));$("bpm").textContent=bpm;$("
 function beatSet(d){beats=Math.max(1,Math.min(16,beats+d));$("beats").textContent=beats}
 function clickSound(accent=false){ac=ac||new AudioContext();let o=ac.createOscillator(),g=ac.createGain();o.frequency.value=accent?1120:760;g.gain.setValueAtTime(.12,ac.currentTime);g.gain.exponentialRampToValueAtTime(.0001,ac.currentTime+.05);o.connect(g).connect(ac.destination);o.start();o.stop(ac.currentTime+.06)}
 function shape(s){return "e  "+s[5]+"\nB  "+s[4]+"\nG  "+s[3]+"\nD  "+s[2]+"\nA  "+s[1]+"\nE  "+s[0]}
-function showChord(){let c=sel[i];$("cur").textContent=c;$("next").textContent=sel[(i+1)%sel.length];$("diag").textContent=shape(CD[c])}
-function startChord(){stopAll();i=0;b=0;showChord();let f=()=>{b++;if(b>beats){b=1;i=(i+1)%sel.length;showChord()}clickSound(b===1)};f();timer=setInterval(f,60000/bpm)}
+function setChordMode(mode){
+  chordMode=mode;
+  $("orderedChordMode").classList.toggle("selected",mode==="ordered");
+  $("randomChordMode").classList.toggle("selected",mode==="random");
+  showChord()
+}
+function getNextChordIndex(){
+  if(chordMode==="ordered") return (i+1)%sel.length;
+  if(sel.length<2) return i;
+  let n=i;
+  while(n===i) n=Math.floor(Math.random()*sel.length);
+  return n
+}
+function showChord(){
+  let c=sel[i], nextIndex=getNextChordIndex();
+  $("cur").textContent=c;
+  $("next").textContent=sel[nextIndex];
+  $("next").dataset.nextIndex=nextIndex;
+  $("diag").textContent=shape(CD[c])
+}
+function startChord(){
+  stopAll();i=0;b=0;showChord();
+  let f=()=>{
+    b++;
+    if(b>beats){
+      b=1;
+      i=chordMode==="random" ? +$("next").dataset.nextIndex : (i+1)%sel.length;
+      showChord()
+    }
+    clickSound(b===1)
+  };
+  f();
+  timer=setInterval(f,60000/bpm)
+}
 function tab(x){["c","s","r","p"].forEach(k=>{$((k==="c"?"c":k)+"p").classList.toggle("hidden",k!==x)});["tc","ts","tr","tp"].forEach(id=>$(id).classList.remove("on"));$({c:"tc",s:"ts",r:"tr",p:"tp"}[x]).classList.add("on");stopAll();if(x==="r")renderRoutines();if(x==="p")renderProgress()}
 
 const N=["C","C#","D","D#","E","F","F#","G","G#","A","A#","B"], OPEN=[4,11,7,2,9,4], STR=["e","B","G","D","A","E"];
