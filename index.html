@@ -1,0 +1,104 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Guitar Practice Coach</title>
+<style>
+*{box-sizing:border-box}body{margin:0;background:#0d1015;color:#f5f7fa;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+main{max-width:720px;margin:auto;padding:22px 16px 42px}.top{display:flex;justify-content:space-between;align-items:center}
+h1{font-size:29px;margin:0}.sub{color:#9ba4b2;margin:4px 0 18px}.card{background:#181d25;border:1px solid #29303b;border-radius:18px;padding:17px;margin:12px 0}
+h2{font-size:18px;margin:0 0 13px}.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}.grid button,.seg button{background:#282f3a;color:#fff}
+button{border:0;border-radius:11px;padding:12px;font-size:15px;font-weight:750}.selected{background:#ffb000!important;color:#101010!important}
+.row{display:flex;gap:10px;align-items:center}.grow{flex:1}.num{font-size:27px;font-weight:850;min-width:92px;text-align:center}
+input[type=range]{width:100%;accent-color:#ffb000}.seg{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.big{text-align:center;font-size:58px;font-weight:900;margin:4px}.next{text-align:center;color:#aab2bf}.diagram{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;white-space:pre;background:#0e1217;border-radius:13px;padding:14px;text-align:center;margin-top:12px}
+.primary{background:#ffb000;color:#111}.danger{background:#8d2c35}.wide{width:100%;padding:15px;font-size:17px}
+.status{text-align:center;color:#ffb000;font-weight:800;margin-top:9px}.small{font-size:13px;color:#9ba4b2}
+.timer{text-align:center;font-variant-numeric:tabular-nums;font-size:22px;font-weight:800}
+</style>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#0d1015">
+<link rel="apple-touch-icon" href="icon.svg">
+</head>
+<body>
+<main>
+<div class="top"><h1>🎸 Guitar Practice Coach</h1><span id="mode">CHORDS</span></div>
+<div class="sub">Build a practice session and let the app call the changes.</div>
+
+<section class="card">
+<h2>1. Choose chords</h2><div class="grid" id="chords"></div>
+<div class="small" style="margin-top:10px">Pick 2–6 chords. Tap a selected chord again to remove it.</div>
+</section>
+
+<section class="card">
+<h2>2. Tempo</h2>
+<div class="row"><button onclick="setBpm(bpm-5)">−5</button><div class="num"><span id="bpm">80</span><small> BPM</small></div><button onclick="setBpm(bpm+5)">+5</button></div>
+<input id="range" type="range" min="40" max="200" value="80" oninput="setBpm(+this.value)">
+<div class="row" style="margin-top:12px"><button onclick="tapTempo()">TAP TEMPO</button><span class="small">Tap repeatedly</span></div>
+</section>
+
+<section class="card">
+<h2>3. Beats per chord</h2>
+<div class="row"><button onclick="setBeats(beats-1)">−</button><div class="num" id="beats">4</div><button onclick="setBeats(beats+1)">+</button></div>
+</section>
+
+<section class="card">
+<h2>4. Progression</h2>
+<div class="seg"><button id="ordered" class="selected" onclick="setRandom(false)">ORDERED</button><button id="random" onclick="setRandom(true)">RANDOM</button></div>
+</section>
+
+<section class="card">
+<h2>5. Session</h2>
+<div class="row"><button onclick="setMinutes(minutes-1)">−</button><div class="num"><span id="minutes">5</span><small> min</small></div><button onclick="setMinutes(minutes+1)">+</button></div>
+<div class="small" style="margin-top:9px">The session stops automatically when time expires.</div>
+</section>
+
+<section class="card">
+<div class="big" id="current">Ready</div>
+<div class="next">Next: <b id="next">—</b></div>
+<div class="diagram" id="diagram">Choose your chords and press Start.</div>
+<div class="timer" id="timer">05:00</div>
+<div class="status" id="status"></div>
+</section>
+
+<div class="row">
+<button class="primary wide" onclick="start()">START</button>
+<button class="danger wide" onclick="stop()">STOP</button>
+</div>
+</main>
+
+<script>
+const data={
+"C":"x32010","G":"320003","D":"xx0232","A":"x02220","E":"022100","Am":"x02210","Em":"022000","Dm":"xx0231",
+"F":"133211","Bm":"x24432","C7":"x32310","D7":"xx0212","E7":"020100","A7":"x02020","G7":"320001","Dsus4":"xx0233","Asus4":"x02230"
+};
+let selected=["G","C","D","Em"], bpm=80, beats=4, minutes=5, random=false, running=false;
+let idx=0, beat=0, interval=null, endAt=0, audio=null, taps=[];
+
+const el=id=>document.getElementById(id);
+Object.keys(data).forEach(c=>{const b=document.createElement("button");b.textContent=c;b.dataset.c=c;b.onclick=()=>toggle(c);el("chords").appendChild(b)});
+function render(){document.querySelectorAll("#chords button").forEach(b=>b.classList.toggle("selected",selected.includes(b.dataset.c)))}
+function toggle(c){if(selected.includes(c)){if(selected.length>2)selected=selected.filter(x=>x!==c)}else if(selected.length<6)selected.push(c);render()}
+function setBpm(v){bpm=Math.max(40,Math.min(200,v));el("bpm").textContent=bpm;el("range").value=bpm;if(running){stop();start()}}
+function setBeats(v){beats=Math.max(1,Math.min(16,v));el("beats").textContent=beats}
+function setMinutes(v){minutes=Math.max(1,Math.min(60,v));el("minutes").textContent=minutes;updateTimer(minutes*60)}
+function setRandom(v){random=v;el("random").classList.toggle("selected",v);el("ordered").classList.toggle("selected",!v)}
+function nextIndex(){if(!random)return(idx+1)%selected.length;let n=idx;while(selected.length>1&&n===idx)n=Math.floor(Math.random()*selected.length);return n}
+function shape(s){return "e  "+s[5]+"\nB  "+s[4]+"\nG  "+s[3]+"\nD  "+s[2]+"\nA  "+s[1]+"\nE  "+s[0]}
+function show(){let c=selected[idx], n=selected[nextIndex()];el("current").textContent=c;el("next").textContent=n;el("diagram").textContent="   "+c+" Major / Minor\n\n"+shape(data[c])}
+function clickSound(accent=false){try{audio=audio||new AudioContext();let o=audio.createOscillator(),g=audio.createGain();o.frequency.value=accent?1100:800;g.gain.setValueAtTime(.0001,audio.currentTime);g.gain.exponentialRampToValueAtTime(.13,audio.currentTime+.005);g.gain.exponentialRampToValueAtTime(.0001,audio.currentTime+.045);o.connect(g).connect(audio.destination);o.start();o.stop(audio.currentTime+.05)}catch(e){}}
+function tick(){beat++;clickSound(beat===1);if(beat>beats){beat=1;idx=nextIndex();show()}el("status").textContent="Beat "+beat+" / "+beats}
+function updateTimer(sec){sec=Math.max(0,Math.floor(sec));el("timer").textContent=String(Math.floor(sec/60)).padStart(2,"0")+":"+String(sec%60).padStart(2,"0")}
+function start(){if(selected.length<2)return;stop();running=true;idx=0;beat=0;endAt=Date.now()+minutes*60000;show();tick();interval=setInterval(()=>{tick();let remain=Math.ceil((endAt-Date.now())/1000);updateTimer(remain);if(remain<=0){stop();el("status").textContent="Session complete — great work!"}},60000/bpm)}
+function stop(){if(interval)clearInterval(interval);interval=null;running=false;if(!endAt)updateTimer(minutes*60)}
+function tapTempo(){const now=Date.now();taps=taps.filter(t=>now-t<2200);taps.push(now);if(taps.length>1){let a=[];for(let i=1;i<taps.length;i++)a.push(taps[i]-taps[i-1]);setBpm(Math.round(60000/(a.reduce((x,y)=>x+y,0)/a.length)))}if(taps.length>5)taps=taps.slice(-4)}
+render();show();updateTimer(minutes*60);
+</script>
+<script>
+if ("serviceWorker" in navigator) {
+  window.addEventListener("load", () => navigator.serviceWorker.register("./sw.js"));
+}
+</script>
+</body>
+</html>
