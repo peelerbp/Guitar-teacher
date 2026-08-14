@@ -26,6 +26,7 @@ input[type=range]{width:100%;accent-color:#ffb000}
 .cell{height:40px;border-right:1px solid #59616d;border-bottom:1px solid #39404a;display:flex;align-items:center;justify-content:center;font-size:12px;position:relative}
 .dot{width:30px;height:30px;border-radius:50%;background:#3b4552;display:flex;align-items:center;justify-content:center;font-weight:800;position:relative;transition:.12s}
 .root{background:#ffb000;color:#111}.playing{outline:3px solid white;transform:scale(1.16);box-shadow:0 0 0 3px #ffb000}
+.correct{outline:3px solid #fff;box-shadow:0 0 0 5px #55d98b}
 .dim{opacity:.16}.finger{position:absolute;right:-5px;bottom:-6px;width:16px;height:16px;border-radius:50%;background:#e9edf2;color:#111;font-size:10px;display:flex;align-items:center;justify-content:center;font-weight:900}
 .diagram{white-space:pre;font-family:monospace;text-align:center;background:#0e1217;padding:12px;border-radius:12px}
 .danger{background:#8b2d35}.wide{width:100%}.pills{display:grid;grid-template-columns:repeat(5,1fr);gap:7px;margin-top:10px}
@@ -35,11 +36,14 @@ input[type=range]{width:100%;accent-color:#ffb000}
 .list{display:grid;gap:9px}.item{background:#10151b;border-radius:13px;padding:12px}.item-top{display:flex;justify-content:space-between;gap:10px;align-items:center}
 .item-title{font-weight:850}.item-meta{color:#9da6b4;font-size:13px;margin-top:5px}.actions{display:flex;gap:7px;margin-top:9px}.actions button{padding:9px;font-size:13px}
 .timer{font-size:26px;text-align:center;font-weight:900}
+.listenbox{background:#10151b;border-radius:14px;padding:14px;text-align:center;margin-top:10px}
+.detected{font-size:42px;font-weight:900;margin:4px 0}
+.good{color:#55d98b}.warn{color:#ffcf5c}.bad{color:#ff7b7b}
 </style>
 </head>
 <body><main>
 <h1>🎸 Guitar Practice Coach</h1>
-<div class="muted">Chord practice, scale boxes, saved routines & progress tracking</div>
+<div class="muted">Chord practice, scale boxes, routines, progress & microphone note detection</div>
 
 <div class="tabs">
 <button id="tc" class="on" onclick="tab('c')">CHORDS</button>
@@ -70,21 +74,50 @@ input[type=range]{width:100%;accent-color:#ffb000}
       </select>
     </div>
   </div>
+
   <div class="card"><b>Standard scale box</b><div class="pills" id="positions"></div><div class="muted small" id="positionInfo" style="margin-top:9px"></div></div>
+
   <div class="card"><b>Trainer settings</b><div class="row" style="margin-top:10px">
     <select id="direction" onchange="buildSequence()"><option value="up">Ascending</option><option value="down">Descending</option><option value="both" selected>Up + Down</option></select>
     <select id="subdivision"><option value="1">Quarter notes</option><option value="2" selected>Eighth notes</option><option value="3">Triplets</option><option value="4">Sixteenth notes</option></select>
   </div></div>
-  <div class="card"><b>Tempo: <span id="bpm2">80</span> BPM</b><input id="r2" type="range" min="40" max="200" value="80" oninput="tempo(this.value)">
+
+  <div class="card">
+    <b>Trainer mode</b>
+    <div class="row" style="margin-top:10px">
+      <button id="timedMode" class="selected" onclick="setTrainerMode('timed')">METRONOME</button>
+      <button id="listenMode" onclick="setTrainerMode('listen')">LISTEN TO GUITAR</button>
+    </div>
+    <div class="muted small" style="margin-top:8px">Listen mode advances only after the app hears the correct pitch several times in a row.</div>
+  </div>
+
+  <div class="card">
+    <b>Tempo: <span id="bpm2">80</span> BPM</b>
+    <input id="r2" type="range" min="40" max="200" value="80" oninput="tempo(this.value)">
     <div class="row" style="margin-top:10px"><button id="rampBtn" onclick="toggleRamp()">Progressive BPM: OFF</button><select id="rampEvery"><option value="1">+5 every 1 loop</option><option value="2" selected>+5 every 2 loops</option><option value="4">+5 every 4 loops</option></select></div>
   </div>
+
   <div class="card"><div><b id="stitle"></b> <span class="badge" id="boxBadge"></span></div><div id="snotes" class="muted"></div><div class="fwrap"><div id="fret" class="fret"></div></div></div>
-  <div class="card"><div class="muted small" style="text-align:center">PLAY THIS NOTE</div><div id="trainerNote" class="trainer-note">—</div><div id="trainerLoc" class="trainer-loc">Press Start Trainer</div><div id="trainerStatus" class="status"></div></div>
+
+  <div class="card">
+    <div class="muted small" style="text-align:center">PLAY THIS NOTE</div>
+    <div id="trainerNote" class="trainer-note">—</div>
+    <div id="trainerLoc" class="trainer-loc">Press Start Trainer</div>
+    <div id="trainerStatus" class="status"></div>
+
+    <div id="listenPanel" class="listenbox hidden">
+      <div class="muted small">MICROPHONE HEARS</div>
+      <div id="detectedNote" class="detected">—</div>
+      <div id="detectedInfo" class="muted">Waiting for microphone…</div>
+    </div>
+  </div>
+
   <div class="card">
     <b>Practice session</b>
     <div class="row" style="margin-top:10px"><button onclick="changeSessionMinutes(-1)">−</button><button><span id="sessionMinutes">10</span> min</button><button onclick="changeSessionMinutes(1)">+</button></div>
     <div class="timer" id="sessionTimer">10:00</div>
   </div>
+
   <div class="row"><button class="primary" onclick="startTrainer()">START TRAINER</button><button class="danger" onclick="finishSession()">FINISH</button></div>
 </div>
 
@@ -115,7 +148,7 @@ input[type=range]{width:100%;accent-color:#ffb000}
 const $=x=>document.getElementById(x);
 const CD={"C":"x32010","G":"320003","D":"xx0232","A":"x02220","E":"022100","Am":"x02210","Em":"022000","Dm":"xx0231","F":"133211","Bm":"x24432","C7":"x32310","D7":"xx0212","E7":"020100","A7":"x02020","G7":"320001","Dsus4":"xx0233","Asus4":"x02230"};
 let sel=["G","C","D","Em"],bpm=80,beats=4,i=0,b=0,timer=null,ac=null,sessionInterval=null;
-let sessionMinutes=10,sessionStartedAt=null,startBpm=80;
+let sessionMinutes=10,sessionStartedAt=null,startBpm=80,trainerMode="timed";
 
 Object.keys(CD).forEach(c=>{let x=document.createElement("button");x.textContent=c;x.dataset.c=c;x.onclick=()=>{if(sel.includes(c)){if(sel.length>2)sel=sel.filter(v=>v!==c)}else if(sel.length<6)sel.push(c);renderChords()};$("chords").appendChild(x)});
 function renderChords(){document.querySelectorAll("#chords button").forEach(x=>x.classList.toggle("on",sel.includes(x.dataset.c)))}
@@ -153,43 +186,124 @@ function draw(){
   $("stitle").textContent=$("key").value+" "+$("scale").options[$("scale").selectedIndex].text;$("boxBadge").textContent="Box "+(pos+1);$("snotes").textContent="Scale tones: "+allowed.map(x=>N[x]).join(" • ");renderPositions();buildSequence()
 }
 function buildSequence(){let items=boxNotes().slice().sort((a,b)=>b.s-a.s||a.f-b.f),dir=$("direction").value;if(dir==="down")items=items.reverse();if(dir==="both"&&items.length>1)items=items.concat(items.slice(0,-1).reverse());seq=items;seqIndex=0;clearPlaying();if(seq.length)mark(seq[0])}
-function clearPlaying(){document.querySelectorAll(".dot.playing").forEach(x=>x.classList.remove("playing"))}
+function clearPlaying(){document.querySelectorAll(".dot.playing,.dot.correct").forEach(x=>x.classList.remove("playing","correct"))}
 function mark(item){clearPlaying();let d=document.querySelector('.dot[data-string="'+item.s+'"][data-fret="'+item.f+'"]');if(d)d.classList.add("playing");$("trainerNote").textContent=N[item.pitch];$("trainerLoc").textContent=STR[item.s]+" string • fret "+item.f}
+function flashCorrect(item){let d=document.querySelector('.dot[data-string="'+item.s+'"][data-fret="'+item.f+'"]');if(d){d.classList.remove("playing");d.classList.add("correct");setTimeout(()=>d.classList.remove("correct"),180)}}
 function toggleRamp(){ramp=!ramp;$("rampBtn").classList.toggle("selected",ramp);$("rampBtn").textContent="Progressive BPM: "+(ramp?"ON":"OFF")}
 function changeSessionMinutes(d){sessionMinutes=Math.max(1,Math.min(60,sessionMinutes+d));$("sessionMinutes").textContent=sessionMinutes;updateSessionTimer(sessionMinutes*60)}
 function updateSessionTimer(sec){sec=Math.max(0,Math.floor(sec));$("sessionTimer").textContent=String(Math.floor(sec/60)).padStart(2,"0")+":"+String(sec%60).padStart(2,"0")}
+function setTrainerMode(m){trainerMode=m;$("timedMode").classList.toggle("selected",m==="timed");$("listenMode").classList.toggle("selected",m==="listen");$("listenPanel").classList.toggle("hidden",m!=="listen");stopMic()}
+
 function startTrainer(){
   stopAll();buildSequence();if(!seq.length)return;seqIndex=0;loops=0;startBpm=bpm;sessionStartedAt=Date.now();
-  let endAt=Date.now()+sessionMinutes*60000,subdivision=+$("subdivision").value,loopEvery=+$("rampEvery").value,beatCounter=0;
+  let endAt=Date.now()+sessionMinutes*60000;
   sessionInterval=setInterval(()=>{let remain=Math.ceil((endAt-Date.now())/1000);updateSessionTimer(remain);if(remain<=0)finishSession()},1000);
+  if(trainerMode==="listen") startListenTrainer();
+  else startTimedTrainer();
+}
+function startTimedTrainer(){
+  const subdivision=+$("subdivision").value,loopEvery=+$("rampEvery").value;let beatCounter=0;
   const schedule=()=>{timer=setTimeout(step,60000/bpm/subdivision)};
   const step=()=>{let item=seq[seqIndex];mark(item);clickSound(beatCounter%subdivision===0);$("trainerStatus").textContent=(seqIndex+1)+" / "+seq.length+" • "+bpm+" BPM";seqIndex++;beatCounter++;
     if(seqIndex>=seq.length){seqIndex=0;loops++;if(ramp&&loops%loopEvery===0&&bpm<200)tempo(Math.min(200,bpm+5))}schedule()};
   step()
 }
+
+/* Microphone pitch detection */
+let micStream=null,micCtx=null,micSource=null,analyser=null,micRAF=null,stableHits=0,lastDetected=-1;
+async function startListenTrainer(){
+  $("listenPanel").classList.remove("hidden");
+  $("trainerStatus").textContent="Requesting microphone…";
+  try{
+    micStream=await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:false,noiseSuppression:false,autoGainControl:false}});
+    micCtx=new (window.AudioContext||window.webkitAudioContext)();
+    micSource=micCtx.createMediaStreamSource(micStream);
+    analyser=micCtx.createAnalyser();analyser.fftSize=2048;micSource.connect(analyser);
+    $("trainerStatus").textContent="Listening — play the highlighted note";
+    mark(seq[seqIndex]);listenLoop();
+  }catch(e){
+    $("trainerStatus").textContent="Microphone permission is required for Listen mode";
+    $("detectedInfo").textContent="Allow microphone access in Safari, then try again.";
+  }
+}
+function autoCorrelate(buf,sampleRate){
+  let size=buf.length,rms=0;for(let i=0;i<size;i++)rms+=buf[i]*buf[i];rms=Math.sqrt(rms/size);
+  if(rms<0.012)return -1;
+  let r1=0,r2=size-1,thres=.2;
+  for(let i=0;i<size/2;i++){if(Math.abs(buf[i])<thres){r1=i;break}}
+  for(let i=1;i<size/2;i++){if(Math.abs(buf[size-i])<thres){r2=size-i;break}}
+  buf=buf.slice(r1,r2);size=buf.length;
+  let c=new Array(size).fill(0);
+  for(let lag=0;lag<size;lag++)for(let i=0;i<size-lag;i++)c[lag]+=buf[i]*buf[i+lag];
+  let d=0;while(d+1<size&&c[d]>c[d+1])d++;
+  let max=-1,maxpos=-1;for(let i=d;i<size;i++){if(c[i]>max){max=c[i];maxpos=i}}
+  if(maxpos<=0)return -1;
+  let T0=maxpos;
+  if(T0>0&&T0<size-1){
+    let x1=c[T0-1],x2=c[T0],x3=c[T0+1],a=(x1+x3-2*x2)/2,b=(x3-x1)/2;
+    if(a)T0=T0-b/(2*a)
+  }
+  return sampleRate/T0
+}
+function freqToMidi(freq){return Math.round(69+12*Math.log2(freq/440))}
+function midiToName(m){return N[((m%12)+12)%12]}
+function centsOff(freq,m){let target=440*Math.pow(2,(m-69)/12);return Math.round(1200*Math.log2(freq/target))}
+function listenLoop(){
+  if(!analyser)return;
+  let buf=new Float32Array(analyser.fftSize);analyser.getFloatTimeDomainData(buf);
+  let freq=autoCorrelate(buf,micCtx.sampleRate);
+  if(freq>0){
+    let midi=freqToMidi(freq),name=midiToName(midi),pitch=((midi%12)+12)%12,cents=centsOff(freq,midi);
+    $("detectedNote").textContent=name;$("detectedInfo").textContent=Math.round(freq)+" Hz • "+(cents>0?"+":"")+cents+" cents";
+    let target=seq[seqIndex];
+    if(target && pitch===target.pitch && Math.abs(cents)<=35){
+      if(lastDetected===pitch)stableHits++;else stableHits=1;
+      lastDetected=pitch;$("detectedNote").className="detected good";
+      if(stableHits>=3){
+        flashCorrect(target);stableHits=0;lastDetected=-1;seqIndex++;
+        if(seqIndex>=seq.length){seqIndex=0;loops++}
+        $("trainerStatus").textContent="Correct ✓ • "+(seqIndex+1)+" / "+seq.length;
+        setTimeout(()=>{if(seq.length)mark(seq[seqIndex])},160)
+      }
+    }else{
+      stableHits=0;lastDetected=pitch;$("detectedNote").className="detected warn";
+    }
+  } else {
+    $("detectedNote").textContent="—";$("detectedNote").className="detected";$("detectedInfo").textContent="Play a clear single note";
+  }
+  micRAF=requestAnimationFrame(listenLoop)
+}
+function stopMic(){
+  if(micRAF)cancelAnimationFrame(micRAF);micRAF=null;
+  if(micStream)micStream.getTracks().forEach(t=>t.stop());micStream=null;
+  if(micCtx)micCtx.close();micCtx=null;analyser=null;micSource=null;
+}
 function finishSession(){
   if(sessionStartedAt){let mins=Math.max(1,Math.round((Date.now()-sessionStartedAt)/60000));recordSession(mins);sessionStartedAt=null}
   stopAll();updateSessionTimer(sessionMinutes*60);$("trainerStatus").textContent="Session saved"
 }
-function stopAll(){if(timer){clearInterval(timer);clearTimeout(timer)}if(sessionInterval)clearInterval(sessionInterval);timer=null;sessionInterval=null;clearPlaying()}
+function stopAll(){if(timer){clearInterval(timer);clearTimeout(timer)}if(sessionInterval)clearInterval(sessionInterval);timer=null;sessionInterval=null;clearPlaying();stopMic()}
 
+/* Saved routines and progress */
 function getRoutines(){return JSON.parse(localStorage.getItem("gpc_routines")||"[]")}
 function setRoutines(v){localStorage.setItem("gpc_routines",JSON.stringify(v))}
 function getHistory(){return JSON.parse(localStorage.getItem("gpc_history")||"[]")}
 function setHistory(v){localStorage.setItem("gpc_history",JSON.stringify(v))}
 function saveRoutine(){
   let name=$("routineName").value.trim()||($("key").value+" "+$("scale").options[$("scale").selectedIndex].text+" Box "+(pos+1));
-  let routines=getRoutines();routines.unshift({id:Date.now(),name,key:$("key").value,scale:$("scale").value,pos,bpm,dir:$("direction").value,sub:$("subdivision").value,ramp,mins:sessionMinutes});
+  let routines=getRoutines();routines.unshift({id:Date.now(),name,key:$("key").value,scale:$("scale").value,pos,bpm,dir:$("direction").value,sub:$("subdivision").value,ramp,mins:sessionMinutes,mode:trainerMode});
   setRoutines(routines.slice(0,20));$("routineName").value="";renderRoutines()
 }
 function loadRoutine(id){
-  let r=getRoutines().find(x=>x.id===id);if(!r)return;$("key").value=r.key;$("scale").value=r.scale;pos=r.pos;tempo(r.bpm);$("direction").value=r.dir;$("subdivision").value=r.sub;ramp=r.ramp;sessionMinutes=r.mins;$("sessionMinutes").textContent=sessionMinutes;updateSessionTimer(sessionMinutes*60);$("rampBtn").classList.toggle("selected",ramp);$("rampBtn").textContent="Progressive BPM: "+(ramp?"ON":"OFF");draw();tab("s")
+  let r=getRoutines().find(x=>x.id===id);if(!r)return;$("key").value=r.key;$("scale").value=r.scale;pos=r.pos;tempo(r.bpm);$("direction").value=r.dir;$("subdivision").value=r.sub;ramp=r.ramp;sessionMinutes=r.mins;setTrainerMode(r.mode||"timed");
+  $("sessionMinutes").textContent=sessionMinutes;updateSessionTimer(sessionMinutes*60);$("rampBtn").classList.toggle("selected",ramp);$("rampBtn").textContent="Progressive BPM: "+(ramp?"ON":"OFF");draw();tab("s")
 }
 function deleteRoutine(id){setRoutines(getRoutines().filter(x=>x.id!==id));renderRoutines()}
-function renderRoutines(){let list=$("routineList"),r=getRoutines();list.innerHTML=r.length?"":"<div class='muted'>No saved routines yet.</div>";r.forEach(x=>{let d=document.createElement("div");d.className="item";d.innerHTML="<div class='item-top'><div class='item-title'>"+x.name+"</div><span class='badge'>"+x.bpm+" BPM</span></div><div class='item-meta'>"+x.key+" • "+$("scale").querySelector('option[value="'+x.scale+'"]').textContent+" • Box "+(x.pos+1)+" • "+x.mins+" min</div><div class='actions'><button class='primary'>LOAD</button><button class='danger'>DELETE</button></div>";d.querySelectorAll("button")[0].onclick=()=>loadRoutine(x.id);d.querySelectorAll("button")[1].onclick=()=>deleteRoutine(x.id);list.appendChild(d)});$("routineCount").textContent=r.length}
-function recordSession(mins){let h=getHistory();h.unshift({id:Date.now(),date:new Date().toLocaleDateString(),key:$("key").value,scale:$("scale").value,pos:pos+1,mins,start:startBpm,end:bpm});setHistory(h.slice(0,50));renderProgress()}
-function renderProgress(){let h=getHistory(),r=getRoutines(),total=h.reduce((a,x)=>a+x.mins,0),best=h.reduce((a,x)=>Math.max(a,x.end),0);$("totalMinutes").textContent=total+" min";$("totalSessions").textContent=h.length;$("bestBpm").textContent=best;$("routineCount").textContent=r.length;let list=$("historyList");list.innerHTML=h.length?"":"<div class='muted'>No sessions recorded yet.</div>";h.slice(0,10).forEach(x=>{let d=document.createElement("div");d.className="item";d.innerHTML="<div class='item-top'><div class='item-title'>"+x.key+" "+$("scale").querySelector('option[value="'+x.scale+'"]').textContent+"</div><span class='badge'>"+x.mins+" min</span></div><div class='item-meta'>"+x.date+" • Box "+x.pos+" • "+x.start+" → "+x.end+" BPM</div>";list.appendChild(d)})}
+function renderRoutines(){let list=$("routineList"),r=getRoutines();list.innerHTML=r.length?"":"<div class='muted'>No saved routines yet.</div>";r.forEach(x=>{let d=document.createElement("div");d.className="item";d.innerHTML="<div class='item-top'><div class='item-title'>"+x.name+"</div><span class='badge'>"+x.bpm+" BPM</span></div><div class='item-meta'>"+x.key+" • "+$("scale").querySelector('option[value="'+x.scale+'"]').textContent+" • Box "+(x.pos+1)+" • "+x.mins+" min • "+((x.mode||"timed")==="listen"?"Listen":"Metronome")+"</div><div class='actions'><button class='primary'>LOAD</button><button class='danger'>DELETE</button></div>";d.querySelectorAll("button")[0].onclick=()=>loadRoutine(x.id);d.querySelectorAll("button")[1].onclick=()=>deleteRoutine(x.id);list.appendChild(d)});$("routineCount").textContent=r.length}
+function recordSession(mins){let h=getHistory();h.unshift({id:Date.now(),date:new Date().toLocaleDateString(),key:$("key").value,scale:$("scale").value,pos:pos+1,mins,start:startBpm,end:bpm,mode:trainerMode});setHistory(h.slice(0,50));renderProgress()}
+function renderProgress(){let h=getHistory(),r=getRoutines(),total=h.reduce((a,x)=>a+x.mins,0),best=h.reduce((a,x)=>Math.max(a,x.end),0);$("totalMinutes").textContent=total+" min";$("totalSessions").textContent=h.length;$("bestBpm").textContent=best;$("routineCount").textContent=r.length;let list=$("historyList");list.innerHTML=h.length?"":"<div class='muted'>No sessions recorded yet.</div>";h.slice(0,10).forEach(x=>{let d=document.createElement("div");d.className="item";d.innerHTML="<div class='item-top'><div class='item-title'>"+x.key+" "+$("scale").querySelector('option[value="'+x.scale+'"]').textContent+"</div><span class='badge'>"+x.mins+" min</span></div><div class='item-meta'>"+x.date+" • Box "+x.pos+" • "+x.start+" → "+x.end+" BPM • "+((x.mode||"timed")==="listen"?"Listen":"Metronome")+"</div>";list.appendChild(d)})}
 function clearProgress(){if(confirm("Clear all saved practice history?")){setHistory([]);renderProgress()}}
+
 renderChords();showChord();renderPositions();draw();updateSessionTimer(sessionMinutes*60);renderRoutines();renderProgress();
 if("serviceWorker"in navigator)addEventListener("load",()=>navigator.serviceWorker.register("./sw.js"));
 </script>
